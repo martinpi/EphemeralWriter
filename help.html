@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Basic Page Needs
+    	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    	<meta charset="utf-8">
+    	<title>Ephemeral Writing</title>
+    	<meta name="description" content="">
+    	<meta name="author" content="">
+
+    <!-- Mobile Specific Metas
+    	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- FONT
+    	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    	<link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+
+    <!-- CSS
+    	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    	<link rel="stylesheet" href="css/normalize.css">
+    	<link rel="stylesheet" href="css/skeleton.css">
+    	<link rel="stylesheet" href="css/style.css">
+
+    <!-- Favicon
+    	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    	<link rel="icon" type="image/png" href="png/favicon.png">
+
+    <!-- Scripts
+    	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+
+    </head>
+
+    <body>
+
+    <!-- Primary Page Layout
+    	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    	<div class="container">
+    		<div class="row">
+    			<div class="logo"></div>
+    			<div class="title">Ephemeral Writing</div>
+    		</div>
+    		<div class="row">
+    			<div class="two columns">&nbsp;</div>
+    			<div class="nine columns">
+
+    				<h1 id="an-introduction-to-ephemerald">An Introduction to Ephemerald</h1>
+    				<p>Ephemerald is <strong>a tool for writing procedural text</strong>. It is a nicer interface to a tool called <a href="https://tracery.io">Tracery</a> with the goal of making procedural text generation available to non-programmers in a super streamlined form. Ephmeral Writing was created by <a href="http://vertical-progress.net">Martin Pichlmair</a>.</p>
+    				<p>What does it do? It allows you to procedurally generate text. You can use that text to feed <a href="https://mobile.twitter.com/onavampire">twitter bots</a>, to <a href="https://mobile.twitter.com/HConstellations">create SVG images</a>, to name your child or for any other purpose where you want to have varied, partially randomised text.</p>
+    				<p>How does it do that? You, the writer, provide text that has blank spaces. Then you provide different snippets of text to go into those blank spaces. The software randomly selects pieces every time you tell it to. That way your text varies over time.</p>
+    				
+    				<h2 id="principles">Getting Started</h2>
+    				<p>You are working with a simple text file when writing in Ephemerald. Everything you do goes into a single file. </p>
+    				<p>There are two core concepts: <em>rules</em> and <em>expansions</em>. A rule is a list of options and its name goes in square brackets. You can have as many rules as you want in your file.</p>
+    				
+<pre><code>[heister]
+Alice O&#39;Rourke
+Frank Diob
+Jimmy Tartufi
+Winnie He</code></pre>
+    				
+    				<p>The above rule (<code>heister</code>) has 4 options, each of them the name of a different heister. </p>
+    				<p>An <em>expansion</em> expands a rule (i.e. it picks a candidate from the list of options). Writing <code>#heister#</code> expands the above rule called <code>[heister]</code>. You can expand rules as often as you want. They will always give you another random snippet.</p>
+    				<p>Here is an example of a rule that expands the rule <code>heister</code>:</p>
+    				
+<pre><code>[origin]
+At dawn, #heister# and #heister# got ready for the biggest heist in their lives.</code></pre>
+    				
+    				<p><code>Origin</code> is the name of the default node that gets expanded first. You should always have an <code>origin</code> node in your file. </p>
+    				<p>If the above is evaluated it will randomly pick two values for the two expansions and the result will be either combination of names. An example result is <code>At dawn, Alice O&#39;Rourke and Jimmy Tartufi got ready for the biggest heist in their lives.</code> – but you don&#39;t have control over what names get picked and if you run the expansion again the names will be different.</p>
+    				
+    				<h2 id="tags">Tags</h2>
+    				<p>With every new expansion of <code>#heister#</code> there will be yet a new heist crew member. That means that you can&#39;t easily tell a story where we learn what happened to Jimmy and Jimmy alone. In order to save who the heisters are, we use <em>tags</em>. Tags are labels for specific expansions that are used instead of expansions in later parts of your grammar:</p>
+    				
+<pre><code>[origin]
+[crew1:#heister#][crew2:#heister#]#crew1# and #crew2# got ready to go but #crew2# was nervous.</code></pre>
+    				
+    				<p>Tags can contain a value or a group of values. Tags can appear inside <code>#rules#</code>. Tags are variable, they can be set any number of times but a new value will override the old.</p>
+    				
+    				<h2 id="modifiers">Modifiers</h2>
+    				<p>Modifiers are a way to process the text once it is expanded. They take <strong>the result of an expansion</strong> and modify it. For example, you can use them to transform a word to lower case.</p>
+    				
+    				
+<pre><code>[origin]
+The vehicle had #heistcrew.uppercase# printed in big letter printed on the side.
+
+[heistcrew]
+safecrackx
+breakrs.biz
+goldgetters</code></pre>
+    				
+    				
+    				<p>By adding .uppercase to the rule heistcrew, the resulting text is turned into upper case letters. This is an example of a modifier. More of those can be found below.</p>
+    				<p>The above would evaluate to one of the following sentences:</p>
+<pre><code>The vehicle had SAFECRACKX printed in big letter printed on the side.
+The vehicle had BREAKRS.BIZ printed in big letter printed on the side.
+The vehicle had GOLDGETTERS printed in big letter printed on the side.</code></pre>
+    				
+    				<h3 id="mofifiers">Mofifiers</h3>
+    				<p>Ephemerald supports the following modifiers:  </p>
+    				<ul>
+    					<li><code>.uppercase</code>, <code>capitaliseAll</code>, <code>capitalizeAll</code>: All caps</li>
+    					<li><code>.lowercase</code>: All lowercase</li>
+    					<li><code>.capitalize</code>: Capitalise first letter</li>
+    					<li><code>.a</code>: Put a/an before the word</li>
+    					<li><code>.ed</code>: Turn into simple past tense (not sophisticated)</li>
+    					<li><code>.s</code>: Turn word into its plural form</li>
+    					<li><code>.n</code>: Add a newline after the text</li>
+    					<li><code>.title</code>: Title case</li>
+    				</ul>
+
+    				<h3 id="mofifiers">Running it in Unity or Making a Twitter Bot</h3>
+    				<p>
+    				You can directly use the grammars you wrote in Unity via the <a href="https://github.com/martinpi/EphemeraldUnity"> Ephemeral Unity Plugin</a>.</p>
+
+    				<p>Or upload the converted JSON (after pressing the CONVERT button) to <a href="https://cheapbotsdonequick.com">Cheap Bots Done Quick</a> and you have a Twitter bot.
+
+    				</p>
+
+    			</div>
+    			<div class="two columns">&nbsp;</div>
+
+    		</div>
+    	</div>
+    </body>
+    </html>

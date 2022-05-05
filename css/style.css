@@ -1,0 +1,150 @@
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@300&family=PT+Mono&display=swap");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/dracula.min.css");
+
+html {
+  height: 100%;
+}
+body {
+  height: 100%;
+  background-image: linear-gradient(
+    109.6deg,
+    rgba(253, 199, 141, 1) 11.3%,
+    rgba(249, 143, 253, 1) 100.2%
+  );
+  font-family: Lato, sans-serif;
+  font-weight: 300;
+  font-size: 15px;
+  margin: 0;
+}
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+*:focus {
+  outline: none;
+}
+a,
+a:visited,
+a:active {
+  color: black;
+}
+/*main {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+*/
+.logo {
+  display: block;
+  margin: 30px auto 10px;
+  width: 128px;
+  height: 128px;
+  background: url("../png/128.png") no-repeat;
+  background-size: contain;
+}
+.title {
+  color: #fff;
+  text-align: center;
+  font-weight: 300;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+  font-size: 34px;
+  margin-top: 20px;
+}
+.subtitle {
+  color: #fff;
+  text-align: center;
+  font-weight: 200;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+  font-size: 24px;
+  margin-top: 10px;
+}
+.window {
+  width:  100%;
+  border-radius: 6px;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  /*margin: 20px;*/
+}
+.window .window-header, .window .window-footer, .output-window .window-header {
+  height: 25px;
+  background: Gainsboro;
+  position: relative;
+}
+.window .window-header .action-buttons {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  margin-top: -5px;
+  width: 10px;
+  height: 10px;
+  background: Crimson;
+  border-radius: 50%;
+  box-shadow: 15px 0 0 Orange, 30px 0 0 LimeGreen;
+}
+.window .window-footer .action-buttons, .output-window .window-header .action-buttons {
+  position: absolute;
+}
+.action-buttons {
+  padding-left: 2px;
+}
+
+.output-window {
+  position: fixed;
+  width:  40%;
+  border-radius: 6px;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  /*margin: 20px;*/
+}
+.output {
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12),
+    0 3px 1px -2px rgba(0, 0, 0, 0.2);
+  font-family: "PT Mono", monospace;
+  font-size: 14px;
+  font-weight: 400;
+  min-height: 340px;
+  letter-spacing: normal;
+  line-height: 20px;
+  padding: 10px;
+  resize: none !important;
+  tab-size: 4;
+  background-color: whitesmoke;
+  color: #1a1a1a;  
+}
+.editor {
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12),
+    0 3px 1px -2px rgba(0, 0, 0, 0.2);
+  font-family: "PT Mono", monospace;
+  font-size: 14px;
+  font-weight: 400;
+  min-height: 340px;
+  letter-spacing: normal;
+  line-height: 20px;
+  padding: 10px;
+  resize: none !important;
+  tab-size: 4;
+  background-color: #1a1a1a;
+  color: whitesmoke;
+}
+.editor.hljs {
+  padding: 10px;
+}
+.controls {
+  font-size: 14px;
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  margin-top: -10px;
+  display: flex;
+}
+.controls > div:first-child > a {
+  display: inline-block;
+  width: 40px;
+}
+.features {
+  width: 547px;
+  font-size: 16px;
+  margin-bottom: 30px;
+}

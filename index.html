@@ -1,1 +1,249 @@
-<h1>hello</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Basic Page Needs
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+      <meta charset="utf-8">
+      <title>Ephemeral Writing</title>
+      <meta name="description" content="">
+      <meta name="author" content="">
+
+    <!-- Mobile Specific Metas
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- FONT
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+      <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+
+    <!-- CSS
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+      <link rel="stylesheet" href="css/normalize.css">
+      <link rel="stylesheet" href="css/skeleton.css">
+      <link rel="stylesheet" href="css/style.css">
+
+    <!-- Favicon
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+      <link rel="icon" type="image/png" href="png/favicon.png">
+
+    <!-- Scripts
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+      <script src="js/tracery.js"></script>
+      <script src="js/modifiers.js"></script>
+
+    </head>
+
+    <body>
+
+    <!-- Primary Page Layout
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+      <div class="container">
+        <div class="row">
+          <div class="logo"></div>
+          <div class="title">Ephemeral Writing</div>
+          <div class="subtitle">A Friendly Procedural Text Generator</div>
+        </div>
+        <div class="row">
+          <div class="one-half column" style="margin-top: 2em">
+
+            <div class="window">
+              <div class="window-header">
+                <div class="action-buttons"></div>
+<!--             <div class="controls">
+              The Ephemeral
+            </div>
+          -->          </div>
+          <div class="window-body">
+            <div class="editor">
+[heister]
+Alice O'Rourke
+Frank Diob
+Jimmy Tartufi
+Winnie He
+
+[origin]
+[crew1:#heister#][crew2:#heister#]At dawn, #crew1# and #crew2# got ready for the biggest heist in their lives. #crew2# was nervous.
+
+            </div>
+            <div class="window-footer">
+            </div>
+            <script type="module" id="code">
+              import {CodeJar} from "https://medv.io/codejar/codejar.js?"
+              const node = document.querySelector('.editor');
+
+/*
+    lightGrey    = 0.95, 0.95, 0.95 f2f2f2
+    cyan         = 0.41, 0.72, 0.92 69b8eb
+    blue         = 0.60, 0.60, 0.90 9999e6
+    magenta      = 0.82, 0.28, 0.82 d147d1
+    yellow       = 0.95, 0.75, 0.10 f2bf1a
+    orange       = 0.95, 0.50, 0.20 f28033
+    green        = 0.28, 0.72, 0.41 47b869
+    blackbg      = 0.10, 0.10, 0.10 1a1a1a
+
+
+    static let ruleName    = "(\\[.*\\])"
+    static let expansion   = "(\\#[a-zA-Z0-9,:\\-\\.\\?\\(\\)\\[\\]]*\\#)"
+    static let modifier    = "(\\.[a-zA-Z][a-zA-Z0-9,]*\\([a-zA-Z0-9,\\.\\-]*\\))"
+    static let symbols       = "(\\+|-|\\*|/|=|\\{|\\}|\\[|\\]|\\(|\\))"
+    static let tag       = "\\[([a-zA-Z0-9,\\-\\.\\?\\(\\)\\[\\]]+:)"
+    static let tab       = "(^[ \t])"
+    static let numberLiteral = "\\b([0-9]+(\\.[0-9]*)?)\\b"
+    static let commentLine   = "(^\\\\.*$)"
+
+    regex.numberLiteral : color.blue,
+    regex.modifier      : color.orange,
+    regex.expansion   : color.yellow,
+    regex.ruleName      : color.magenta,
+    regex.tag     : color.cyan,
+    regex.tab         : color.blackbg,
+    regex.commentLine   : color.green,
+
+    */
+
+    const my = editor => {
+      let code = editor.textContent;
+      code = code.replace(
+        /\b([0-9]+(\.[0-9]*)?)\b/g,
+        '<font color="#9999e6">$1</font>'
+        );
+      code = code.replace(
+        /(\.[a-zA-Z][a-zA-Z0-9,]*\([a-zA-Z0-9,\.\-]*\))/g,
+        '<font color="#f28033">$1</font>'
+        );
+      code = code.replace(
+        /(\#[a-zA-Z0-9,:\-\.\?\(\)\[\]]*\#)/g,
+        '<font color="#f28033">$1</font>'
+        );
+      code = code.replace(
+        /(\[.*\])/g,
+        '<font color="#d147d1">$1</font>'
+        );
+      code = code.replace(
+        /\[([a-zA-Z0-9,\-\.\?\(\)\[\]]+:)/g,
+        '[<font color="#69b8eb">$1</font>'
+        );
+      code = code.replace(
+        /(^\\.*$)/g,
+        '<font color="#47b869">$1</font>'
+        );
+      editor.innerHTML = code;
+    };
+
+    const jar = CodeJar(node, my);
+
+    function string2json(text) {
+      var rules = {}
+      var symbol = ""
+      var expansions = new Array()
+
+      let lines = text.split('\n')
+      lines.forEach(line => {
+        let trimmed = line.trim()
+
+        if (trimmed.length == 0 || trimmed.startsWith("\\\\")) 
+          return
+
+        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+          if (symbol.length > 0) {
+            rules[symbol] = expansions
+            expansions = new Array()
+          }
+          symbol = trimmed.substring(1,trimmed.length-1)
+        } else {
+          expansions.push(trimmed)
+        }
+
+        if (symbol.length > 0) {
+          rules[symbol] = expansions
+        }
+      })
+      return rules
+    }
+
+    function parse(json) {
+      let grammar = tracery.createGrammar(json)
+                  // tracery.outputExpansionTrace = true
+                  grammar.addModifiers(modifiers)
+                  let result = grammar.flatten("#origin#")
+                  // alert(result);
+
+                  result = result.replace("\n", "<br/>")
+
+                  let resultNode = document.getElementById("output")
+                  resultNode.innerHTML += "<div style=\"margin-top: 0.5em;\">" + result + "<\div><hr/>"
+
+                  // let debugNode = document.getElementById("debugOutput")
+                  // debugNode.textContent = grammar.toHTML()
+                }
+
+                // let btn1 = document.getElementById("btnJson");
+                // btn1.addEventListener('click', event => {
+                //   let code = jar.toString()
+                //   const obj = JSON.parse(code)
+                //   parse(obj)
+                // });
+
+                let btn2 = document.getElementById("btnConv");
+                btn2.addEventListener('click', event => {
+                  let code = jar.toString()
+                  let json = string2json(code)
+                  let jsonString = JSON.stringify(json)
+                  // jar.updateCode(jsonString)
+
+                  let resultNode = document.getElementById("output")
+                  resultNode.innerHTML += "<div style=\"margin-top: 0.5em;\"><font color=\"#f28033\">" + jsonString + "</font><\div>"
+
+                });
+
+                let btn3 = document.getElementById("btnEph");
+                btn3.addEventListener('click', event => {
+                  let code = jar.toString()
+                  if (code.startsWith("{")) {
+                    const obj = JSON.parse(code)
+                    parse(obj)
+                  } else {
+                    let json = string2json(code)
+                    parse(json)              
+                  }
+                });
+
+                let btn4 = document.getElementById("btnClear");
+                btn4.addEventListener('click', event => {
+                  let resultNode = document.getElementById("output")
+                  resultNode.textContent = ""
+                });
+
+              </script>
+
+            </div>
+          </div>
+
+        </div>
+        <div class="one-half column" style="margin-top: 2em">
+          <div class="output-window">
+            <div class="window-header">
+              <div class="action-buttons">
+                <button class="button-primary" id="btnEph">Run</button>
+                <button class="button-primary" id="btnConv">Convert</button>
+                <!-- <button class="button-primary" id="btnJson">Run JSON</button> -->
+                <button class="button-primary" id="btnClear">Clear</button>
+              </div>
+            </div>
+            <div id="output" class="output"></div>
+          </div>
+          <div id="debugOutput"></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top: 2em;">
+        <p>
+        <a href="help.html">How do I use this?</a><br/>
+        <a href="http://vertical-progress.net">Who made this?</a><br/>
+        </p>
+      </div>
+
+    </div>
+  </body>
+
+  </html>
