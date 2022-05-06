@@ -31,6 +31,7 @@
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
       <script src="js/tracery.js"></script>
       <script src="js/modifiers.js"></script>
+      <script src="js/grammars.js"></script>
 
     </head>
 
@@ -68,7 +69,38 @@ Winnie He
             </div>
             <div class="window-footer">
             </div>
-            <script type="module" id="code">
+
+          </div>
+        </div>
+
+      </div>
+      <div class="one-half column" style="margin-top: 2em">
+        <div class="output-window">
+          <div class="window-header">
+            <div class="action-buttons">
+              <button class="button-primary" id="btnEph">Run</button>
+              <button class="button-primary" id="btnConv">Convert</button>
+              <!-- <button class="button-primary" id="btnJson">Run JSON</button> -->
+              <button class="button-primary" id="btnClear">Clear</button>
+            </div>
+          </div>
+          <div id="output" class="output"></div>
+        </div>
+        <div id="debugOutput"></div>
+      </div>
+    </div>
+    <div class="row" style="margin-top: 2em;">
+      <p>
+        <button style="height: 22px; background-color: #1a1a1a; color: #f2f2f2" id="btnEx1">Load Haiku Example</button> <a href="https://twitter.com/haikookies">See the Twitter bot</a><br/>
+        <button style="height: 22px; background-color: #1a1a1a; color: #f2f2f2" id="btnEx2">Load Recipe Example</button> <a href="https://twitter.com/OnAVampire">See the Twitter bot</a>
+      </p>
+      <p>
+      If you want to learn how to write procedural text with this tool, here you can see <a href="help.html">how to use this</a>.<br/>
+      You can also read up on the <a href="http://vertical-progress.net">people who brought you this tool</a>.<br/>
+      </p>
+    </div>
+
+                <script type="module" id="code">
               import {CodeJar} from "https://medv.io/codejar/codejar.js?"
               const node = document.querySelector('.editor');
 
@@ -164,86 +196,71 @@ Winnie He
 
     function parse(json) {
       let grammar = tracery.createGrammar(json)
-                  // tracery.outputExpansionTrace = true
-                  grammar.addModifiers(modifiers)
-                  let result = grammar.flatten("#origin#")
-                  // alert(result);
+        // tracery.outputExpansionTrace = true
+        grammar.addModifiers(modifiers)
+        let result = grammar.flatten("#origin#")
+        // alert(result);
 
-                  result = result.replace("\n", "<br/>")
+        result = result.replace("\n", "<br/>")
 
-                  let resultNode = document.getElementById("output")
-                  resultNode.innerHTML += "<div style=\"margin-top: 0.5em;\">" + result + "<\div><hr/>"
+        let resultNode = document.getElementById("output")
+        resultNode.innerHTML += "<div style=\"margin-top: 0.5em;\">" + result + "<\div><hr/>"
 
-                  // let debugNode = document.getElementById("debugOutput")
-                  // debugNode.textContent = grammar.toHTML()
-                }
+        // let debugNode = document.getElementById("debugOutput")
+        // debugNode.textContent = grammar.toHTML()
+      }
 
-                // let btn1 = document.getElementById("btnJson");
-                // btn1.addEventListener('click', event => {
-                //   let code = jar.toString()
-                //   const obj = JSON.parse(code)
-                //   parse(obj)
-                // });
+      // let btn1 = document.getElementById("btnJson");
+      // btn1.addEventListener('click', event => {
+      //   let code = jar.toString()
+      //   const obj = JSON.parse(code)
+      //   parse(obj)
+      // });
 
-                let btn2 = document.getElementById("btnConv");
-                btn2.addEventListener('click', event => {
-                  let code = jar.toString()
-                  let json = string2json(code)
-                  let jsonString = JSON.stringify(json)
-                  // jar.updateCode(jsonString)
+      let btn2 = document.getElementById("btnConv");
+      btn2.addEventListener('click', event => {
+        let code = jar.toString()
+        let json = string2json(code)
+        let jsonString = JSON.stringify(json)
+        // jar.updateCode(jsonString)
 
-                  let resultNode = document.getElementById("output")
-                  resultNode.innerHTML = "<div style=\"margin-top: 0.5em;\"><font color=\"#f28033\">" + jsonString + "</font><\div>"
+        let resultNode = document.getElementById("output")
+        resultNode.innerHTML = "<div style=\"margin-top: 0.5em;\"><font color=\"#f28033\">" + jsonString + "</font><\div>"
 
-                });
+      });
 
-                let btn3 = document.getElementById("btnEph");
-                btn3.addEventListener('click', event => {
-                  let code = jar.toString()
-                  if (code.startsWith("{")) {
-                    const obj = JSON.parse(code)
-                    parse(obj)
-                  } else {
-                    let json = string2json(code)
-                    parse(json)              
-                  }
-                });
+      let btn3 = document.getElementById("btnEph");
+      btn3.addEventListener('click', event => {
+        let code = jar.toString()
+        if (code.startsWith("{")) {
+          const obj = JSON.parse(code)
+          parse(obj)
+        } else {
+          let json = string2json(code)
+          parse(json)              
+        }
+      });
 
-                let btn4 = document.getElementById("btnClear");
-                btn4.addEventListener('click', event => {
-                  let resultNode = document.getElementById("output")
-                  resultNode.textContent = ""
-                });
+      let btn4 = document.getElementById("btnClear");
+      btn4.addEventListener('click', event => {
+        let resultNode = document.getElementById("output")
+        resultNode.textContent = ""
+      });
 
-              </script>
+      let btnEx1 = document.getElementById("btnEx1");
+      btnEx1.addEventListener('click', event => {
+        jar.updateCode(cookies)
+      });
 
-            </div>
-          </div>
+      let btnEx2 = document.getElementById("btnEx2");
+      btnEx2.addEventListener('click', event => {
+        jar.updateCode(sparrows)
+      });
 
-        </div>
-        <div class="one-half column" style="margin-top: 2em">
-          <div class="output-window">
-            <div class="window-header">
-              <div class="action-buttons">
-                <button class="button-primary" id="btnEph">Run</button>
-                <button class="button-primary" id="btnConv">Convert</button>
-                <!-- <button class="button-primary" id="btnJson">Run JSON</button> -->
-                <button class="button-primary" id="btnClear">Clear</button>
-              </div>
-            </div>
-            <div id="output" class="output"></div>
-          </div>
-          <div id="debugOutput"></div>
-        </div>
-      </div>
-      <div class="row" style="margin-top: 2em;">
-        <p>
-        <a href="help.html">How do I use this?</a><br/>
-        <a href="http://vertical-progress.net">Who made this?</a><br/>
-        </p>
-      </div>
 
-    </div>
-  </body>
+    </script>
 
-  </html>
+  </div>
+</body>
+
+</html>

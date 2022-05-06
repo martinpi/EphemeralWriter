@@ -29,10 +29,22 @@
     };
 
     var modifiers = {
+        capitaliseAll : function(s) {
+            return s.replace(/(?:^|\s)\S/g, function(a) {
+                return a.toUpperCase();
+            });
+
+        },
+
         capitalizeAll : function(s) {
             return s.replace(/(?:^|\s)\S/g, function(a) {
                 return a.toUpperCase();
             });
+
+        },
+
+        caps : function(s) {
+            return s.charAt(0).toUpperCase() + s.slice(1);
 
         },
 

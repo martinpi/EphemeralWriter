@@ -89,6 +89,9 @@ a:active {
 .action-buttons {
   padding-left: 2px;
 }
+.action-buttons button {
+  height:  18px;
+}
 
 .output-window {
   position: fixed;
@@ -148,3 +151,4 @@ a:active {
   font-size: 16px;
   margin-bottom: 30px;
 }
+
