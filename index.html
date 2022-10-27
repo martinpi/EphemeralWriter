@@ -204,7 +204,7 @@ Winnie He
         let result = grammar.flatten("#origin#")
         // alert(result);
 
-        result = result.replace("\n", "<br/>")
+        result = result.replaceAll("\n", "<br/>")
 
         let resultNode = document.getElementById("output")
         resultNode.innerHTML += "<div style=\"margin-top: 0.5em;\">" + result + "<\div><hr/>"
