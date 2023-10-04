@@ -29,9 +29,10 @@
     <!-- Scripts
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-      <script src="js/tracery.js"></script>
+      <script src="js/ephemeral.js"></script>
       <script src="js/modifiers.js"></script>
       <script src="js/grammars.js"></script>
+      <script src="js/utils.js"></script>
 
     </head>
 
@@ -57,14 +58,16 @@
           -->          </div>
           <div class="window-body">
             <div class="editor">
-[heister]
+<!-- [heister]
 Alice O'Rourke
 Frank Diob
 Jimmy Tartufi
 Winnie He
 
 [origin]
-[crew1:#heister#][crew2:#heister#]At dawn, #crew1# and #crew2# got ready for the biggest heist in their lives. #crew2# was nervous.
+[crew1:#heister#][crew2:#heister#]At dawn, #crew1# and #crew2# got ready for the biggest heist in their lives. #crew2# was nervous. -->
+[origin]
+@bla=3@ => @bla@ @bla==3?test@
 
             </div>
             <div class="window-footer">
@@ -168,38 +171,9 @@ Winnie He
 
     const jar = CodeJar(node, my);
 
-    function string2json(text) {
-      var rules = {}
-      var symbol = ""
-      var expansions = new Array()
-
-      let lines = text.split('\n')
-      lines.forEach(line => {
-        let trimmed = line.trim()
-
-        if (trimmed.length == 0 || trimmed.startsWith("\\\\")) 
-          return
-
-        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
-          if (symbol.length > 0) {
-            rules[symbol] = expansions
-            expansions = new Array()
-          }
-          symbol = trimmed.substring(1,trimmed.length-1)
-        } else {
-          expansions.push(trimmed)
-        }
-
-        if (symbol.length > 0) {
-          rules[symbol] = expansions
-        }
-      })
-      return rules
-    }
-
     function parse(json) {
-      let grammar = tracery.createGrammar(json)
-        // tracery.outputExpansionTrace = true
+      let grammar = ephemeral.createGrammar(json)
+        ephemeral.outputExpansionTrace = true
         grammar.addModifiers(modifiers)
         let result = grammar.flatten("#origin#")
         // alert(result);
@@ -234,14 +208,7 @@ Winnie He
 
       let btn3 = document.getElementById("btnEph");
       btn3.addEventListener('click', event => {
-        let code = jar.toString()
-        if (code.startsWith("{")) {
-          const obj = JSON.parse(code)
-          parse(obj)
-        } else {
-          let json = string2json(code)
-          parse(json)              
-        }
+        parse(jar.toString())              
       });
 
       let btn4 = document.getElementById("btnClear");

@@ -123,8 +123,8 @@ input[type="button"] {
 
 @media (min-width: 550px) {
   .output-window {
-    position: fixed;
-    width:  40%;
+    /* position: fixed; */
+    min-width:  40%;
   }
 
 }
