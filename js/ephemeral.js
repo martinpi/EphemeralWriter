@@ -200,20 +200,123 @@ var ephemeral = function () {
 					this.varop = new NodeVariableOp(this, this.raw);
 					this.varop.activate();
 
-					// just a lookup - return the value
-					if (this.varop.type == 0) {
-						this.finishedText = this.scratch[this.varop.target];
-					}  else if (this.varop.type == 2) { 
-						// conditional
-						const condition = this.scratch[this.varop.target] == this.varop.value && this.varop.value !== undefined;
+					switch (this.varop.type) { 
+						case 0:
+							this.finishedText = this.scratch[this.varop.target];
+							break;
+						default:
+						case 1:
+							this.finishedText = "ok";
+							break;
+						case 2:
+							// conditional
+							const condition = this.scratch[this.varop.target] == this.varop.value && this.varop.value !== undefined;
 
-						if (this.varop.conditional && condition) {
-							this.finishedText = this.varop.conditional;
-						} else { 
-							this.finishedText = "";
-						}
+							if (this.varop.conditional && condition) {
+								console.log("Parsing conditional")
+
+								// Parse to find any actions, and figure out what the symbol is
+								this.preactions = [];
+								this.postactions = [];
+
+								// var parsed = ephemeral.parseTag(this.varop.conditional);
+
+								var parsed = {
+									symbol: undefined,
+									modifiers: []
+								};
+								var sections = ephemeral.parse(this.varop.conditional);
+								var symbolSection = undefined;
+								for (var i = 0; i < sections.length; i++) {
+									if (sections[i].type === 0) {
+										if (symbolSection === undefined) {
+											symbolSection = sections[i].raw;
+										}
+									} else {
+										if (symbolSection === undefined) {
+											symbolSection = sections[i].raw;
+										}
+									}
+								}
+
+								var components = symbolSection.split(".");
+								parsed.symbol = components[0];
+								parsed.modifiers = components.slice(1);
+								
+
+								// console.info(parsed)
+
+								// Break into symbol actions and modifiers
+								this.symbol = parsed.symbol;
+								this.modifiers = parsed.modifiers;
+
+								// Create all the preactions from the raw syntax
+								for (var i = 0; i < parsed.preactions.length; i++) {
+									this.preactions[i] = new NodeAction(this, parsed.preactions[i].raw);
+								}
+								for (var i = 0; i < parsed.postactions.length; i++) {
+									//   this.postactions[i] = new NodeAction(this, parsed.postactions[i].raw);
+								}
+
+								// Make undo actions for all preactions (pops for each push)
+								for (var i = 0; i < this.preactions.length; i++) {
+									if (this.preactions[i].type === 0)
+										this.postactions.push(this.preactions[i].createUndo());
+								}
+
+								// Activate all the preactions
+								for (var i = 0; i < this.preactions.length; i++) {
+									this.preactions[i].activate();
+								}
+
+								this.finishedText = this.raw;
+
+								// Expand (passing the node, this allows tracking of recursion depth)
+
+								var selectedRule = this.grammar.selectRule(this.symbol, this, this.errors);
+
+								this.expandChildren(selectedRule, preventRecursion);
+
+								// Apply modifiers
+								// TODO: Update parse function to not trigger on hashtags within parenthesis within tags,
+								//   so that modifier parameters can contain tags "#story.replace(#protagonist#, #newCharacter#)#"
+								for (var i = 0; i < this.modifiers.length; i++) {
+									var modName = this.modifiers[i];
+									var modParams = [];
+									if (modName.indexOf("(") > 0) {
+										var regExp = /\(([^)]+)\)/;
+
+										// Todo: ignore any escaped commas.  For now, commas always split
+										var results = regExp.exec(this.modifiers[i]);
+										if (!results || results.length < 2) {
+										} else {
+											var modParams = results[1].split(",");
+											modName = this.modifiers[i].substring(0, modName.indexOf("("));
+										}
+									}
+
+									var mod = this.grammar.modifiers[modName];
+
+									// Missing modifier?
+									if (!mod) {
+										this.errors.push("Missing modifier " + modName);
+										this.finishedText += "((." + modName + "))";
+									} else {
+										this.finishedText = mod(this.finishedText, modParams);
+
+									}
+
+								}
+
+								// Perform post-actions
+								for (var i = 0; i < this.postactions.length; i++) {
+									this.postactions[i].activate();
+								}
+							} else { 
+								this.finishedText = "nope";
+							}
+							break;
 					}
-
 					break;
 
 			}
@@ -364,7 +467,7 @@ var ephemeral = function () {
 			case 2:
 				return "((some function))";
 			default:
-				return "((Unknown Action))";
+				return "((unknown action))";
 		}
 	};
 
@@ -521,7 +624,7 @@ var ephemeral = function () {
 
 		if (this.stack.length === 0) {
 			errors.push("The rule stack for '" + this.key + "' is empty, too many pops?");
-			return "((" + this.key + "))";
+			return "((empty stack: " + this.key + "))";
 		}
 
 		return this.stack[this.stack.length - 1].selectRule();
@@ -697,7 +800,7 @@ var ephemeral = function () {
 
 		// No symbol?
 		errors.push("No symbol for '" + key + "'");
-		return "((" + key + "))";
+		return "(( no symbol " + key + "))";
 	};
 
 	// Parses a plaintext rule in the ephemeral syntax
@@ -828,14 +931,16 @@ var ephemeral = function () {
 						
 						// variable handling
 						case '@':
-							if (depth === 0) {
+							if (depth === 0 || inVar) {
 								if (inVar) {
 									createSection(start, i, 3);
 									start = i + 1;
+									depth--;
 								} else {
 									if (start < i)
 										createSection(start, i, 0);
 									start = i + 1;
+									depth++;
 								}
 								inVar = !inVar;
 							} 

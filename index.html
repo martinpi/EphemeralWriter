@@ -1,73 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <!-- Basic Page Needs
+  <!-- Basic Page Needs
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-      <meta charset="utf-8">
-      <title>Ephemeral Writing</title>
-      <meta name="description" content="">
-      <meta name="author" content="">
+  <meta charset="utf-8">
+  <title>Ephemeral Writing</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
 
-    <!-- Mobile Specific Metas
+  <!-- Mobile Specific Metas
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-      <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- FONT
+  <!-- FONT
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-      <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
 
-    <!-- CSS
+  <!-- CSS
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-      <link rel="stylesheet" href="css/normalize.css">
-      <link rel="stylesheet" href="css/skeleton.css">
-      <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/skeleton.css">
+  <link rel="stylesheet" href="css/style.css">
 
-    <!-- Favicon
+  <!-- Favicon
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-      <link rel="icon" type="image/png" href="png/favicon.png">
+  <link rel="icon" type="image/png" href="png/favicon.png">
 
-    <!-- Scripts
+  <!-- Scripts
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-      <script src="js/ephemeral.js"></script>
-      <script src="js/modifiers.js"></script>
-      <script src="js/grammars.js"></script>
-      <script src="js/utils.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="js/ephemeral.js"></script>
+  <script src="js/modifiers.js"></script>
+  <script src="js/grammars.js"></script>
+  <script src="js/utils.js"></script>
 
-    </head>
+</head>
 
-    <body>
+<body>
 
-    <!-- Primary Page Layout
+  <!-- Primary Page Layout
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-      <div class="container">
-        <div class="row">
-          <div class="logo"></div>
-          <div class="title">Ephemeral Writing</div>
-          <div class="subtitle">A Friendly Procedural Text Generator</div>
-        </div>
-        <div class="row">
-          <div class="one-half column" style="margin-top: 2em">
+  <div class="container">
+    <div class="row">
+      <div class="logo"></div>
+      <div class="title">Ephemeral Writing</div>
+      <div class="subtitle">A Friendly Procedural Text Generator</div>
+    </div>
+    <div class="row">
+      <div class="one-half column" style="margin-top: 2em">
 
-            <div class="window">
-              <div class="window-header">
-                <div class="action-buttons"></div>
-<!--             <div class="controls">
-              The Ephemeral
-            </div>
-          -->          </div>
+        <div class="window">
+          <div class="window-header">
+            <div class="action-buttons"></div>
+          </div>
           <div class="window-body">
             <div class="editor">
-<!-- [heister]
+              [heister]
 Alice O'Rourke
 Frank Diob
 Jimmy Tartufi
 Winnie He
 
 [origin]
-[crew1:#heister#][crew2:#heister#]At dawn, #crew1# and #crew2# got ready for the biggest heist in their lives. #crew2# was nervous. -->
+[crew1:#heister#][crew2:#heister#]At dawn, #crew1# and #crew2# got ready for the biggest heist in their lives. #crew2# was nervous.
+
+<!-- [exp]
+holla
+
 [origin]
-@bla=3@ => @bla@ @bla==3?test@
+@bla=3@ => @bla@ @bla==3?oh@ @bla==4?ah@ @bla==3?#exp#@ -->
 
             </div>
             <div class="window-footer">
@@ -97,82 +99,85 @@ Winnie He
         Edit in the left window. Press the <code>RUN</code> button to run the grammar. Have fun!
       </p>
       <p>
-        <button style="height: 22px; background-color: #1a1a1a; color: #f2f2f2" id="btnEx1">Load Haiku Example</button> <a href="https://twitter.com/haikookies">See the Twitter bot</a><br/>
-        <button style="height: 22px; background-color: #1a1a1a; color: #f2f2f2" id="btnEx2">Load Recipe Example</button> <a href="https://twitter.com/OnAVampire">See the Twitter bot</a>
+        <button style="height: 22px; background-color: #1a1a1a; color: #f2f2f2" id="btnEx1">Load Haiku Example</button>
+        <a href="https://twitter.com/haikookies">See the Twitter bot</a><br />
+        <button style="height: 22px; background-color: #1a1a1a; color: #f2f2f2" id="btnEx2">Load Recipe Example</button>
+        <a href="https://twitter.com/OnAVampire">See the Twitter bot</a>
       </p>
       <p>
-      If you want to learn how to write procedural text with this tool, here you can see <a href="help.html">how to use this</a>.<br/>
-      You can also read up on the <a href="http://vertical-progress.net">people who brought you this tool</a>.<br/>
+        If you want to learn how to write procedural text with this tool, here you can see <a href="help.html">how to
+          use this</a>.<br />
+        You can also read up on the <a href="http://vertical-progress.net">people who brought you this tool</a>.<br />
       </p>
     </div>
 
-                <script type="module" id="code">
-              import {CodeJar} from "https://medv.io/codejar/codejar.js?"
-              const node = document.querySelector('.editor');
+    <script type="module" id="code">
+      import { CodeJar } from "https://medv.io/codejar/codejar.js?"
+      const node = document.querySelector('.editor');
 
-/*
-    lightGrey    = 0.95, 0.95, 0.95 f2f2f2
-    cyan         = 0.41, 0.72, 0.92 69b8eb
-    blue         = 0.60, 0.60, 0.90 9999e6
-    magenta      = 0.82, 0.28, 0.82 d147d1
-    yellow       = 0.95, 0.75, 0.10 f2bf1a
-    orange       = 0.95, 0.50, 0.20 f28033
-    green        = 0.28, 0.72, 0.41 47b869
-    blackbg      = 0.10, 0.10, 0.10 1a1a1a
+      /*
+          lightGrey    = 0.95, 0.95, 0.95 f2f2f2
+          cyan         = 0.41, 0.72, 0.92 69b8eb
+          blue         = 0.60, 0.60, 0.90 9999e6
+          magenta      = 0.82, 0.28, 0.82 d147d1
+          yellow       = 0.95, 0.75, 0.10 f2bf1a
+          orange       = 0.95, 0.50, 0.20 f28033
+          green        = 0.28, 0.72, 0.41 47b869
+          blackbg      = 0.10, 0.10, 0.10 1a1a1a
+      
+      
+          static let ruleName    = "(\\[.*\\])"
+          static let expansion   = "(\\#[a-zA-Z0-9,:\\-\\.\\?\\(\\)\\[\\]]*\\#)"
+          static let modifier    = "(\\.[a-zA-Z][a-zA-Z0-9,]*\\([a-zA-Z0-9,\\.\\-]*\\))"
+          static let symbols       = "(\\+|-|\\*|/|=|\\{|\\}|\\[|\\]|\\(|\\))"
+          static let tag       = "\\[([a-zA-Z0-9,\\-\\.\\?\\(\\)\\[\\]]+:)"
+          static let tab       = "(^[ \t])"
+          static let numberLiteral = "\\b([0-9]+(\\.[0-9]*)?)\\b"
+          static let commentLine   = "(^\\\\.*$)"
+      
+          regex.numberLiteral : color.blue,
+          regex.modifier      : color.orange,
+          regex.expansion   : color.yellow,
+          regex.ruleName      : color.magenta,
+          regex.tag     : color.cyan,
+          regex.tab         : color.blackbg,
+          regex.commentLine   : color.green,
+      
+          */
 
-
-    static let ruleName    = "(\\[.*\\])"
-    static let expansion   = "(\\#[a-zA-Z0-9,:\\-\\.\\?\\(\\)\\[\\]]*\\#)"
-    static let modifier    = "(\\.[a-zA-Z][a-zA-Z0-9,]*\\([a-zA-Z0-9,\\.\\-]*\\))"
-    static let symbols       = "(\\+|-|\\*|/|=|\\{|\\}|\\[|\\]|\\(|\\))"
-    static let tag       = "\\[([a-zA-Z0-9,\\-\\.\\?\\(\\)\\[\\]]+:)"
-    static let tab       = "(^[ \t])"
-    static let numberLiteral = "\\b([0-9]+(\\.[0-9]*)?)\\b"
-    static let commentLine   = "(^\\\\.*$)"
-
-    regex.numberLiteral : color.blue,
-    regex.modifier      : color.orange,
-    regex.expansion   : color.yellow,
-    regex.ruleName      : color.magenta,
-    regex.tag     : color.cyan,
-    regex.tab         : color.blackbg,
-    regex.commentLine   : color.green,
-
-    */
-
-    const my = editor => {
-      let code = editor.textContent;
-      code = code.replace(
-        /\b([0-9]+(\.[0-9]*)?)\b/g,
-        '<font color="#9999e6">$1</font>'
+      const my = editor => {
+        let code = editor.textContent;
+        code = code.replace(
+          /\b([0-9]+(\.[0-9]*)?)\b/g,
+          '<font color="#9999e6">$1</font>'
         );
-      code = code.replace(
-        /(\.[a-zA-Z][a-zA-Z0-9,]*\([a-zA-Z0-9,\.\-]*\))/g,
-        '<font color="#f28033">$1</font>'
+        code = code.replace(
+          /(\.[a-zA-Z][a-zA-Z0-9,]*\([a-zA-Z0-9,\.\-]*\))/g,
+          '<font color="#f28033">$1</font>'
         );
-      code = code.replace(
-        /(\#[a-zA-Z0-9,:\-\.\?\(\)\[\]]*\#)/g,
-        '<font color="#f28033">$1</font>'
+        code = code.replace(
+          /(\#[a-zA-Z0-9,:\-\.\?\(\)\[\]]*\#)/g,
+          '<font color="#f28033">$1</font>'
         );
-      code = code.replace(
-        /(\[.*\])/g,
-        '<font color="#d147d1">$1</font>'
+        code = code.replace(
+          /(\[.*\])/g,
+          '<font color="#d147d1">$1</font>'
         );
-      code = code.replace(
-        /\[([a-zA-Z0-9,\-\.\?\(\)\[\]]+:)/g,
-        '[<font color="#69b8eb">$1</font>'
+        code = code.replace(
+          /\[([a-zA-Z0-9,\-\.\?\(\)\[\]]+:)/g,
+          '[<font color="#69b8eb">$1</font>'
         );
-      code = code.replace(
-        /(^\\.*$)/g,
-        '<font color="#47b869">$1</font>'
+        code = code.replace(
+          /(^\\.*$)/g,
+          '<font color="#47b869">$1</font>'
         );
-      editor.innerHTML = code;
-    };
+        editor.innerHTML = code;
+      };
 
-    const jar = CodeJar(node, my);
+      const jar = CodeJar(node, my);
 
-    function parse(json) {
-      let grammar = ephemeral.createGrammar(json)
+      function parse(json) {
+        let grammar = ephemeral.createGrammar(json)
         ephemeral.outputExpansionTrace = true
         grammar.addModifiers(modifiers)
         let result = grammar.flatten("#origin#")
@@ -208,7 +213,7 @@ Winnie He
 
       let btn3 = document.getElementById("btnEph");
       btn3.addEventListener('click', event => {
-        parse(jar.toString())              
+        parse(jar.toString())
       });
 
       let btn4 = document.getElementById("btnClear");
