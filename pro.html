@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Basic Page Needs
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <title>Ephemeral Writing</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!-- Mobile Specific Metas
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- FONT
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+
+  <!-- CSS
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/skeleton.css">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Favicon
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="icon" type="image/png" href="png/favicon.png">
+
+  <!-- Scripts
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="js/ephemeral.js"></script>
+  <script src="js/modifiers.js"></script>
+  <script src="js/grammars.js"></script>
+  <script src="js/utils.js"></script>
+
+</head>
+
+<body>
+
+  <!-- Primary Page Layout
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <div class="window container">
+    <div class="window-header row">
+      <div class="twelve columns">
+        <div class="action-buttons"></div>
+      </div>
+    </div>
+
+    <div class="window-body row" style="background-color: white">
+      <div class="editor eight columns" style="min-height: 1000px; height: 100%;">
+[heister]
+Alice O'Rourke
+Frank Diob
+Jimmy Tartufi
+Winnie He
+
+[origin]
+[crew1:#heister#][crew2:#heister#]At dawn, #crew1# and #crew2# got ready for the biggest heist in their lives. #crew2# was nervous.
+
+        <!-- [exp]
+holla
+
+[origin]
+@bla=3@ => @bla@ @bla==3?oh@ @bla==4?ah@ @bla==3?#exp#@ @c@ -->
+
+
+      </div>
+      <div class="four columns" style="margin: 0; padding: 12px;">
+        <button class="button-primary" id="btnEph">Run</button>
+        <button class="button-primary" id="btnConv">Convert</button>
+        <!-- <button class="button-primary" id="btnJson">Run JSON</button> -->
+        <button class="button-primary" id="btnClear">Clear</button>
+
+        <div id="output" class="output"></div>
+        <div id="debugOutput"></div>
+      </div>
+    </div>
+
+    <div class="window-footer row">
+      <div class="twelve columns"></div>
+    </div>
+  </div>
+
+  <script type="module" id="code">
+    import { CodeJar } from "https://medv.io/codejar/codejar.js?"
+    const node = document.querySelector('.editor');
+
+    /*
+        lightGrey    = 0.95, 0.95, 0.95 f2f2f2
+        cyan         = 0.41, 0.72, 0.92 69b8eb
+        blue         = 0.60, 0.60, 0.90 9999e6
+        magenta      = 0.82, 0.28, 0.82 d147d1
+        yellow       = 0.95, 0.75, 0.10 f2bf1a
+        orange       = 0.95, 0.50, 0.20 f28033
+        green        = 0.28, 0.72, 0.41 47b869
+        blackbg      = 0.10, 0.10, 0.10 1a1a1a
+    
+    
+        static let ruleName    = "(\\[.*\\])"
+        static let expansion   = "(\\#[a-zA-Z0-9,:\\-\\.\\?\\(\\)\\[\\]]*\\#)"
+        static let modifier    = "(\\.[a-zA-Z][a-zA-Z0-9,]*\\([a-zA-Z0-9,\\.\\-]*\\))"
+        static let symbols       = "(\\+|-|\\*|/|=|\\{|\\}|\\[|\\]|\\(|\\))"
+        static let tag       = "\\[([a-zA-Z0-9,\\-\\.\\?\\(\\)\\[\\]]+:)"
+        static let tab       = "(^[ \t])"
+        static let numberLiteral = "\\b([0-9]+(\\.[0-9]*)?)\\b"
+        static let commentLine   = "(^\\\\.*$)"
+        static let varopName    = "(@.*@)"
+    
+        regex.numberLiteral : color.blue,
+        regex.modifier      : color.orange,
+        regex.expansion   : color.yellow,
+        regex.ruleName      : color.magenta,
+        regex.tag     : color.cyan,
+        regex.tab         : color.blackbg,
+        regex.commentLine   : color.green,
+    
+        */
+
+    const my = editor => {
+      let code = editor.textContent;
+      code = code.replace(
+        /\@(\w+\=*)/g,
+        '\@<font color="#87b847">$1</font>'
+      );
+      code = code.replace(
+        /(\@)/g,
+        '<font color="#ace364">$1</font>'
+      );
+      code = code.replace(
+        /\b([0-9]+(\.[0-9]*)?)\b/g,
+        '<font color="#9999e6">$1</font>'
+      );
+      code = code.replace(
+        /(\.[a-zA-Z][a-zA-Z0-9,]*\([a-zA-Z0-9,\.\-]*\))/g,
+        '<font color="#f28033">$1</font>'
+      );
+      code = code.replace(
+        /(\#[a-zA-Z0-9,:\-\.\?\(\)\[\]]*\#)/g,
+        '<font color="#f28033">$1</font>'
+      );
+      code = code.replace(
+        /(\[.*\])/g,
+        '<font color="#d147d1">$1</font>'
+      );
+      code = code.replace(
+        /\[([a-zA-Z0-9,\-\.\?\(\)\[\]]+:)/g,
+        '[<font color="#69b8eb">$1</font>'
+      );
+      code = code.replace(
+        /(^\\.*$)/g,
+        '<font color="#47b869">$1</font>'
+      );
+      editor.innerHTML = code;
+    };
+
+    const jar = CodeJar(node, my);
+
+    function parse(json) {
+      let grammar = ephemeral.createGrammar(json)
+      grammar.addModifiers(modifiers)
+      // let result = grammar.flatten("#origin#", false, { c: "Hello" })
+
+      let result = grammar.expand("#origin#", false, { c: "Hello" })
+      // console.log(result.scratch)
+
+      result = result.finishedText.replaceAll("\n", "<br/>")
+
+      let resultNode = document.getElementById("output")
+      resultNode.innerHTML += "<div style=\"margin-top: 0.5em;\">" + result + "<\div><hr/>"
+
+      // let debugNode = document.getElementById("debugOutput")
+      // debugNode.textContent = grammar.toHTML()
+    }
+
+    // let btn1 = document.getElementById("btnJson");
+    // btn1.addEventListener('click', event => {
+    //   let code = jar.toString()
+    //   const obj = JSON.parse(code)
+    //   parse(obj)
+    // });
+
+    let btn2 = document.getElementById("btnConv");
+    btn2.addEventListener('click', event => {
+      let code = jar.toString()
+      let json = string2json(code)
+      let jsonString = JSON.stringify(json)
+      // jar.updateCode(jsonString)
+
+      let resultNode = document.getElementById("output")
+      resultNode.innerHTML = "<div style=\"margin-top: 0.5em;\"><font color=\"#f28033\">" + jsonString + "</font><\div>"
+
+    });
+
+    let btn3 = document.getElementById("btnEph");
+    btn3.addEventListener('click', event => {
+      parse(jar.toString())
+    });
+
+    let btn4 = document.getElementById("btnClear");
+    btn4.addEventListener('click', event => {
+      let resultNode = document.getElementById("output")
+      resultNode.textContent = ""
+    });
+
+    let btnEx1 = document.getElementById("btnEx1");
+    btnEx1.addEventListener('click', event => {
+      jar.updateCode(cookies)
+    });
+
+    let btnEx2 = document.getElementById("btnEx2");
+    btnEx2.addEventListener('click', event => {
+      jar.updateCode(sparrows)
+    });
+
+
+  </script>
+
+  </div>
+</body>
+
+</html>

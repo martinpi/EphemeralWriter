@@ -86,6 +86,10 @@ a:active {
 .window .window-footer .action-buttons, .output-window .window-header .action-buttons {
   position: absolute;
 }
+.window-body {
+  height: max-content;
+  min-height: 600px;
+}
 .action-buttons {
   padding-left: 2px;
 }
