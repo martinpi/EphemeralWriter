@@ -188,9 +188,12 @@ holla
       function parse(json) {
         let grammar = ephemeral.createGrammar(json)
         grammar.addModifiers(modifiers)
-        let result = grammar.flatten("#origin#", false, { c: "Hello" })
+        // let result = grammar.flatten("#origin#", false, { c: "Hello" })
 
-        result = result.replaceAll("\n", "<br/>")
+        let result = grammar.expand("#origin#", false, { c: "Hello" })
+        // console.log(result.scratch)
+        
+        result = result.finishedText.replaceAll("\n", "<br/>")
 
         let resultNode = document.getElementById("output")
         resultNode.innerHTML += "<div style=\"margin-top: 0.5em;\">" + result + "<\div><hr/>"

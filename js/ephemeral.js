@@ -206,7 +206,7 @@ var ephemeral = function () {
 							break;
 						default:
 						case 1:
-							this.finishedText = "ok";
+							this.finishedText = "";
 							break;
 						case 2:
 							// conditional
@@ -321,7 +321,8 @@ var ephemeral = function () {
 									this.postactions[i].activate();
 								}
 							} else { 
-								this.finishedText = "nope";
+								// silently ignore if condition not met
+								this.finishedText = "";
 							}
 							break;
 					}
