@@ -56,20 +56,20 @@
           </div>
           <div class="window-body">
             <div class="editor">
-              [heister]
+              <!-- [heister]
 Alice O'Rourke
 Frank Diob
 Jimmy Tartufi
 Winnie He
 
 [origin]
-[crew1:#heister#][crew2:#heister#]At dawn, #crew1# and #crew2# got ready for the biggest heist in their lives. #crew2# was nervous.
+[crew1:#heister#][crew2:#heister#]At dawn, #crew1# and #crew2# got ready for the biggest heist in their lives. #crew2# was nervous. -->
 
-<!-- [exp]
+[exp]
 holla
 
 [origin]
-@bla=3@ => @bla@ @bla==3?oh@ @bla==4?ah@ @bla==3?#exp#@ -->
+@bla=3@ => @bla@ @bla==3?oh@ @bla==4?ah@ @bla==3?#exp#@ @c@
 
             </div>
             <div class="window-footer">
@@ -134,6 +134,7 @@ holla
           static let tab       = "(^[ \t])"
           static let numberLiteral = "\\b([0-9]+(\\.[0-9]*)?)\\b"
           static let commentLine   = "(^\\\\.*$)"
+          static let varopName    = "(@.*@)"
       
           regex.numberLiteral : color.blue,
           regex.modifier      : color.orange,
@@ -147,6 +148,14 @@ holla
 
       const my = editor => {
         let code = editor.textContent;
+        code = code.replace(
+          /\@(\w+\=*)/g,
+          '\@<font color="#87b847">$1</font>'
+        );
+        code = code.replace(
+          /(\@)/g,
+          '<font color="#ace364">$1</font>'
+        );
         code = code.replace(
           /\b([0-9]+(\.[0-9]*)?)\b/g,
           '<font color="#9999e6">$1</font>'
@@ -178,10 +187,8 @@ holla
 
       function parse(json) {
         let grammar = ephemeral.createGrammar(json)
-        ephemeral.outputExpansionTrace = true
         grammar.addModifiers(modifiers)
-        let result = grammar.flatten("#origin#")
-        // alert(result);
+        let result = grammar.flatten("#origin#", false, { c: "Hello" })
 
         result = result.replaceAll("\n", "<br/>")
 

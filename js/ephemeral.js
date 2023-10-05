@@ -26,7 +26,7 @@ var ephemeral = function () {
 			this.parent = null;
 			this.depth = 0;
 			this.childIndex = 0;
-			this.scratch = {};
+			this.scratch = settings.scratch === undefined ? {} : settings.scratch;
 		} else {
 			this.grammar = parent.grammar;
 			this.parent = parent;
@@ -213,7 +213,7 @@ var ephemeral = function () {
 							const condition = this.scratch[this.varop.target] == this.varop.value && this.varop.value !== undefined;
 
 							if (this.varop.conditional && condition) {
-								console.log("Parsing conditional")
+								// console.log("Parsing conditional")
 
 								// Parse to find any actions, and figure out what the symbol is
 								this.preactions = [];
@@ -223,7 +223,9 @@ var ephemeral = function () {
 
 								var parsed = {
 									symbol: undefined,
-									modifiers: []
+									modifiers: [],
+									preactions: [],
+									postactions: [],
 								};
 								var sections = ephemeral.parse(this.varop.conditional);
 								var symbolSection = undefined;
@@ -275,7 +277,13 @@ var ephemeral = function () {
 
 								var selectedRule = this.grammar.selectRule(this.symbol, this, this.errors);
 
-								this.expandChildren(selectedRule, preventRecursion);
+								if (selectedRule.startsWith("((")) {
+									this.finishedText = this.symbol;
+								} else { 
+
+									this.expandChildren(selectedRule, preventRecursion);
+
+								}
 
 								// Apply modifiers
 								// TODO: Update parse function to not trigger on hashtags within parenthesis within tags,
@@ -372,7 +380,7 @@ var ephemeral = function () {
 			case 0:
 				break;
 			case 1:
-				console.log("Storing " + this.value + " in slot " + this.target + " in " + this.scratch)
+				// console.log("Storing " + this.value + " in slot " + this.target + " in " + this.scratch)
 				this.scratch[this.target] = this.value;
 				break;
 		}
@@ -731,18 +739,19 @@ var ephemeral = function () {
 
 	}
 
-	Grammar.prototype.createRoot = function (rule) {
+	Grammar.prototype.createRoot = function (rule, scratch) {
 		// Create a node and subnodes
 		var root = new EphemeralNode(this, 0, {
 			type: -1,
 			raw: rule,
+			scratch: scratch,
 		});
 
 		return root;
 	};
 
-	Grammar.prototype.expand = function (rule, allowEscapeChars) {
-		var root = this.createRoot(rule);
+	Grammar.prototype.expand = function (rule, allowEscapeChars, scratch) {
+		var root = this.createRoot(rule, scratch);
 		root.expand();
 		if (!allowEscapeChars)
 			root.clearEscapeChars();
@@ -750,8 +759,8 @@ var ephemeral = function () {
 		return root;
 	};
 
-	Grammar.prototype.flatten = function (rule, allowEscapeChars) {
-		var root = this.expand(rule, allowEscapeChars);
+	Grammar.prototype.flatten = function (rule, allowEscapeChars, scratch) {
+		var root = this.expand(rule, allowEscapeChars, scratch);
 
 		return root.finishedText;
 	};
