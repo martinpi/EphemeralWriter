@@ -162,7 +162,7 @@ holla
       grammar.addModifiers(modifiers)
       // let result = grammar.flatten("#origin#", false, { c: "Hello" })
 
-      let result = grammar.expand("#origin#", false, { c: "Hello" })
+      let result = grammar.expand("#origin#", true, { c: "Hello" })
       // console.log(result.scratch)
 
       result = result.finishedText.replaceAll("\n", "<br/>")

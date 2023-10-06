@@ -698,22 +698,47 @@ var ephemeral = function () {
 		var rules = {}
 		var symbol = ""
 		var expansions = new Array()
+		var asterisk = false;
 
 		let lines = text.split('\n')
 		lines.forEach(line => {
 			let trimmed = line.trim()
 
-			if (trimmed.length == 0 || trimmed.startsWith("\\\\"))
+			// skip comments
+			if (trimmed.startsWith("\\\\")) return
+			
+			// skip empty lines unless in * mode
+			if (trimmed.length == 0) {
+				if (asterisk && expansions.length > 0) 
+					expansions[expansions.length - 1] += "\n"
 				return
+			}
 
 			if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+				// we still got the old symbol stored
 				if (symbol.length > 0) {
+					// shave off last \n because a newline before the symbol is ok
+					if (expansions[expansions.length - 1].endsWith("\n")) {
+						expansions[expansions.length - 1] = expansions[expansions.length - 1].substring(0, expansions[expansions.length - 1].length - 1)
+					}
+					
 					rules[symbol] = expansions
 					expansions = new Array()
+					asterisk = false;
 				}
 				symbol = trimmed.substring(1, trimmed.length - 1)
 			} else {
-				expansions.push(trimmed)
+				if (trimmed.startsWith("*")) { 
+					expansions.push(trimmed.substring(1).trim())
+					asterisk = true
+				} else {
+					// append if we're in asterisk mode
+					if (asterisk)
+						expansions[expansions.length - 1] += "\n" + trimmed;
+					else
+						// we're neither in asterisk mode nor is this a new rule, so fall back to old behaviour
+						expansions.push(trimmed)
+				}
 			}
 
 			if (symbol.length > 0) {
