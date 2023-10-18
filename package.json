@@ -1,10 +1,11 @@
 {
   "name": "ephemeral-writer",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "A procedural text system based on Tracery.",
-  "main": "js/ephemeral.js",
-  "types": "ts/index.d.ts",
+  "main": "dist/ephemeral.js",
+  "types": "dist/ephemeral.d.ts",
   "scripts": {
+    "prepublish": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/martinpi/EphemeralWriter/issues"
   },
-  "homepage": "https://github.com/martinpi/EphemeralWriter#readme"
+  "homepage": "https://github.com/martinpi/EphemeralWriter#readme",
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
 }

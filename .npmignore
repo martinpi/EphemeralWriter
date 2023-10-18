@@ -1,0 +1,11 @@
+node_modules/
+.idea
+test
+src
+types
+tsconfig.json
+tslint.json
+.prettierrc
+png
+*.html
+css
