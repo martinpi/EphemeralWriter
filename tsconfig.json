@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"declaration": true,
+		"target": "esnext",
+		"baseUrl": "./src",
+		"jsx": "react",
+		"allowSyntheticDefaultImports": true,
+		"allowJs": true,
+		"moduleResolution": "node",
+		"module": "es2015",
+		"experimentalDecorators": true,
+		"lib": [
+			"es2015",
+			"dom"
+		],
+		"typeRoots": [
+			"./typings/modules",
+			"./node_modules/@types"
+		]
+	},
+	"include": [
+		"./ts/**/*.ts",
+		"./ts/**/*.tsx"
+	]
+}
