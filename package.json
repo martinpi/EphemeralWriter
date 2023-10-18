@@ -1,0 +1,26 @@
+{
+  "name": "ephemeral-writer",
+  "version": "1.0.0",
+  "description": "A procedural text system based on Tracery.",
+  "main": "js/ephemeral.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martinpi/EphemeralWriter.git"
+  },
+  "keywords": [
+    "tracery",
+    "grammar",
+    "procedural",
+    "text",
+    "generation"
+  ],
+  "author": "Martin Pichlmair",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/martinpi/EphemeralWriter/issues"
+  },
+  "homepage": "https://github.com/martinpi/EphemeralWriter#readme"
+}
