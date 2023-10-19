@@ -2,12 +2,14 @@
 /**
  * Description
  * @param {string} text
- * @returns {{}}
+ * @returns {Record<string, string | string[]>}
  */
 function string2json(text) {
+	/** @type {Record<string, string | string[]>} */
 	var rules = {}
 	var symbol = ""
-	var expansions = new Array()
+	/** @type {string[]} */
+	var expansions = []
 
 	let lines = text.split('\n')
 	lines.forEach(line => {

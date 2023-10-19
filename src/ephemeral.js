@@ -3,18 +3,17 @@
  * Original @author Kate
  */
 
-/**
- * @template T
- * @extends {Array<T>{errors:string[]}}
- */
+// /**
+//  * @typedef {Object} EphemeralObject
+// * @property {(Record<string, string | string[]> | string) => Grammar} createGrammar 
+// * @property {(string | null) => { symbol: Symbol | undefined; modifiers: string[]; preactions: NodeAction[]; postactions: NodeAction[] }} parseTag 
+// * @property {(string | null) => { type: number, raw: string }[]} parse
+//  */
 
-class ArrayWithErrors extends Array { errors; }
-
-/**
- * Description
- * @constructor
- */
 export var ephemeral = function () {
+	/**
+	 * @type { () => number } rng
+	 */
 	var rng = Math.random;
 
 	/**
@@ -29,12 +28,28 @@ export var ephemeral = function () {
 	/**
 	 * Description
 	 * @constructor
-	 * @param {EphemeralNode} parent
+	 * @param {EphemeralNode | null} parent
+	 * @param {Grammar} grammar
 	 * @param {number} childIndex
-	 * @param {{}} settings
+	 * @param {{ raw: string, scratch: Record<string, string | undefined> | undefined, type: number }} settings
 	 */
-	var EphemeralNode = function (parent, childIndex, settings) {
+	var EphemeralNode = function (parent, grammar, childIndex, settings) {
+		/** @type {string[]} */
 		this.errors = [];
+		/** @type {number} */
+		this.depth = 0;
+		/** @type {number} */
+		this.childIndex = 0;
+		/** @type {Record<string, string | undefined>} */
+		this.scratch = settings.scratch === undefined ? {} : settings.scratch;
+		/** @type {Grammar} */
+		this.grammar = grammar;
+		/** @type {EphemeralNode | null} */
+		this.parent = null;
+		/** @type {EphemeralNode[]} */
+		this.children = [];
+		/** @type {string} */
+		this.finishedText = "";
 
 		// No input? Add an error, but continue anyways
 		if (settings.raw === undefined) {
@@ -42,24 +57,22 @@ export var ephemeral = function () {
 			settings.raw = "";
 		}
 
-		// If the root node of an expansion, it will have the grammar passed as the 'parent'
-		//  set the grammar from the 'parent', and set all other values for a root node
-		if (parent instanceof ephemeral.Grammar) {
-			this.grammar = parent;
-			this.parent = null;
-			this.depth = 0;
-			this.childIndex = 0;
-			this.scratch = settings.scratch === undefined ? {} : settings.scratch;
-		} else {
-			this.grammar = parent.grammar;
+		if (parent) {
+			/** @type {EphemeralNode | null} */
 			this.parent = parent;
+			/** @type {number} */
 			this.depth = parent.depth + 1;
+			/** @type {number} */
 			this.childIndex = childIndex;
+			/** @type {Record<string, string | undefined>} */
 			this.scratch = parent.scratch;
 		}
 
+		/** @type {string} */
 		this.raw = settings.raw;
+		/** @type {number} */
 		this.type = settings.type;
+		/** @type {boolean} */
 		this.isExpanded = false;
 
 		if (!this.grammar) {
@@ -70,7 +83,7 @@ export var ephemeral = function () {
 
 	/**
 	 * Description
-	 * @returns {void}
+	 * @returns {string}
 	 */
 	EphemeralNode.prototype.toString = function () {
 		return "Node('" + this.raw + "' " + this.type + " d:" + this.depth + ")";
@@ -83,23 +96,21 @@ export var ephemeral = function () {
 	 * @returns {void}
 	 */
 	EphemeralNode.prototype.expandChildren = function (childRule, preventRecursion) {
-		this.children = [];
-		this.finishedText = "";
-
 		// Set the rule for making children,
 		// and expand it into section
+		/** @type {string} */
 		this.childRule = childRule;
 		if (this.childRule !== undefined) {
-			var sections = ephemeral.parse(childRule);
+			var { sections, errors } = ephemeral.parse(childRule);
 
 			// Add errors to this
-			if (sections.errors.length > 0) {
-				this.errors = this.errors.concat(sections.errors);
+			if (errors.length > 0) {
+				this.errors = this.errors.concat(errors);
 
 			}
 
 			for (var i = 0; i < sections.length; i++) {
-				this.children[i] = new EphemeralNode(this, i, sections[i]);
+				this.children[i] = new EphemeralNode(this, this.grammar, i, sections[i]);
 				if (!preventRecursion)
 					this.children[i].expand(preventRecursion);
 
@@ -123,6 +134,7 @@ export var ephemeral = function () {
 		if (!this.isExpanded) {
 			this.isExpanded = true;
 
+			/** @type {string[]} */
 			this.expansionErrors = [];
 
 			// Types of nodes
@@ -147,7 +159,9 @@ export var ephemeral = function () {
 				// Tag
 				case 1:
 					// Parse to find any actions, and figure out what the symbol is
+					/** @type {NodeAction[]} */
 					this.preactions = [];
+					/** @type {NodeAction[]} */
 					this.postactions = [];
 
 					var parsed = ephemeral.parseTag(this.raw);
@@ -166,8 +180,10 @@ export var ephemeral = function () {
 
 					// Make undo actions for all preactions (pops for each push)
 					for (var i = 0; i < this.preactions.length; i++) {
-						if (this.preactions[i].type === 0)
-							this.postactions.push(this.preactions[i].createUndo());
+						if (this.preactions[i].type === 0) {
+							const undoAction = this.preactions[i].createUndo();
+							if (undoAction) this.postactions.push(undoAction);
+						}
 					}
 
 					// Activate all the preactions
@@ -188,6 +204,7 @@ export var ephemeral = function () {
 					//   so that modifier parameters can contain tags "#story.replace(#protagonist#, #newCharacter#)#"
 					for (var i = 0; i < this.modifiers.length; i++) {
 						var modName = this.modifiers[i];
+						/** @type {string[]} */
 						var modParams = [];
 						if (modName.indexOf("(") > 0) {
 							var regExp = /\(([^)]+)\)/;
@@ -237,7 +254,7 @@ export var ephemeral = function () {
 
 					switch (this.varop.type) {
 						case 0:
-							this.finishedText = this.scratch[this.varop.target];
+							this.finishedText = this.scratch[this.varop.target] || "";
 							break;
 						default:
 						case 1:
@@ -251,18 +268,21 @@ export var ephemeral = function () {
 								// console.log("Parsing conditional")
 
 								// Parse to find any actions, and figure out what the symbol is
+								/** @type {NodeAction[]} */
 								this.preactions = [];
+								/** @type {NodeAction[]} */
 								this.postactions = [];
 
 								// var parsed = ephemeral.parseTag(this.varop.conditional);
 
-								var parsed = {
+								/** @type {{ symbol: Symbol | undefined; modifiers: string[]; preactions: NodeAction[]; postactions: NodeAction[]; }} */
+								var reparsed = {
 									symbol: undefined,
 									modifiers: [],
 									preactions: [],
 									postactions: [],
 								};
-								var sections = ephemeral.parse(this.varop.conditional);
+								var { sections, errors } = ephemeral.parse(this.varop.conditional);
 								var symbolSection = undefined;
 								for (var i = 0; i < sections.length; i++) {
 									if (sections[i].type === 0) {
@@ -277,28 +297,28 @@ export var ephemeral = function () {
 								}
 
 								var components = symbolSection.split(".");
-								parsed.symbol = components[0];
-								parsed.modifiers = components.slice(1);
+								reparsed.symbol = components[0];
+								reparsed.modifiers = components.slice(1);
 
 
-								// console.info(parsed)
+								// console.info(reparsed)
 
 								// Break into symbol actions and modifiers
-								this.symbol = parsed.symbol;
-								this.modifiers = parsed.modifiers;
+								this.symbol = reparsed.symbol;
+								this.modifiers = reparsed.modifiers;
 
 								// Create all the preactions from the raw syntax
-								for (var i = 0; i < parsed.preactions.length; i++) {
-									this.preactions[i] = new NodeAction(this, parsed.preactions[i].raw);
+								for (var i = 0; i < reparsed.preactions.length; i++) {
+									this.preactions[i] = new NodeAction(this, reparsed.preactions[i].raw);
 								}
-								for (var i = 0; i < parsed.postactions.length; i++) {
-									//   this.postactions[i] = new NodeAction(this, parsed.postactions[i].raw);
+								for (var i = 0; i < reparsed.postactions.length; i++) {
+									//   this.postactions[i] = new NodeAction(this, reparsed.postactions[i].raw);
 								}
 
 								// Make undo actions for all preactions (pops for each push)
 								for (var i = 0; i < this.preactions.length; i++) {
-									if (this.preactions[i].type === 0)
-										this.postactions.push(this.preactions[i].createUndo());
+									const undoAction = this.preactions[i].createUndo();
+									if (undoAction) this.postactions.push(undoAction);
 								}
 
 								// Activate all the preactions
@@ -325,6 +345,7 @@ export var ephemeral = function () {
 								//   so that modifier parameters can contain tags "#story.replace(#protagonist#, #newCharacter#)#"
 								for (var i = 0; i < this.modifiers.length; i++) {
 									var modName = this.modifiers[i];
+									/** @type {string[]} */
 									var modParams = [];
 									if (modName.indexOf("(") > 0) {
 										var regExp = /\(([^)]+)\)/;
@@ -388,7 +409,9 @@ export var ephemeral = function () {
 	 * @param {string} raw
 	 */
 	function NodeVariableOp(node, raw) {
+		/** @type {EphemeralNode} */
 		this.node = node;
+		/** @type {Record<string, string | undefined>} */
 		this.scratch = this.node.scratch;
 
 		var comparision = raw.split("==");
@@ -434,7 +457,6 @@ export var ephemeral = function () {
 		}
 	}
 
-
 	/**
 	   * An action that occurs when a node is expanded
 	   * Types of actions:
@@ -453,6 +475,7 @@ export var ephemeral = function () {
 		 console.warn("No raw commands for NodeAction");
 		*/
 
+		this.raw = raw;
 		this.node = node;
 
 		var sections = raw.split(":");
@@ -497,18 +520,23 @@ export var ephemeral = function () {
 		switch (this.type) {
 			case 0:
 				// split into sections (the way to denote an array of rules)
-				this.ruleSections = this.rule.split(",");
+				this.ruleSections = this.rule?.split(",");
+				/** @type {string[]} */
 				this.finishedRules = [];
-				this.ruleNodes = [];
-				for (var i = 0; i < this.ruleSections.length; i++) {
-					var n = new EphemeralNode(grammar, 0, {
-						type: -1,
-						raw: this.ruleSections[i]
-					});
+				// /** @type {EphemeralNode[]} */
+				// this.ruleNodes = [];
+				if (this.ruleSections) {
+					for (var i = 0; i < this.ruleSections.length; i++) {
+						// we make parent-less temporary nodes here
+						var n = new EphemeralNode(null, grammar, 0, {
+							type: -1,
+							raw: this.ruleSections[i],
+							scratch: this.node.scratch,
+						});
 
-					n.expand();
-
-					this.finishedRules.push(n.finishedText);
+						n.expand(false);
+						this.finishedRules.push(n.finishedText);
+					}
 				}
 
 				// TODO: escape commas properly
@@ -518,7 +546,7 @@ export var ephemeral = function () {
 				grammar.popRules(this.target);
 				break;
 			case 2:
-				grammar.flatten(this.target, true);
+				grammar.flatten(this.target, true, this.node.scratch);
 				break;
 			case 3:
 				console.log("Should set variable value?")
@@ -548,92 +576,47 @@ export var ephemeral = function () {
 	 * Sets of rules. Can also contain conditional or fallback sets of rulesets.
 	 * @constructor
 	 * @param {Grammar} grammar
-	 * @param {string} raw
+	 * @param {string | string[] | undefined} raw
 	 */
 	function RuleSet(grammar, raw) {
+		/** @type {string | string[] | undefined} */
 		this.raw = raw;
+		/** @type {Grammar} */
 		this.grammar = grammar;
+		/** @type {number} */
 		this.falloff = 1;
+		/** @type {string[] | undefined} */
+		this.defaultRules = [];
+		/** @type {string | undefined} */
+		this.conditionalRule = undefined;
+		/** @type {number} */
+		this.lastIndex = -1;
 
 		if (Array.isArray(raw)) {
 			this.defaultRules = raw;
-		} else if (typeof raw === 'string' || raw instanceof String) {
+		} else if (typeof raw === 'string') { // || raw instanceof String) {
 			this.defaultRules = [raw];
-		} else if (raw === 'object') {
-			// TODO: support for conditional and hierarchical rule sets
 		}
-
 	};
 
 	/**
 	 * Description
 	 * @param {string[]} errors
-	 * @returns {any}
+	 * @returns {string | null}
 	 */
 	RuleSet.prototype.selectRule = function (errors) {
-		// console.log("Get rule", this.raw);
-		// Is there a conditional?
-		if (this.conditionalRule) {
-			var value = this.grammar.expand(this.conditionalRule, true);
-			// does this value match any of the conditionals?
-			if (this.conditionalValues[value]) {
-				var v = this.conditionalValues[value].selectRule(errors);
-				if (v !== null && v !== undefined)
-					return v;
-			}
-			// No returned value?
-		}
-
-		// Is there a ranked order?
-		if (this.ranking) {
-			for (var i = 0; i < this.ranking.length; i++) {
-				var v = this.ranking.selectRule();
-				if (v !== null && v !== undefined)
-					return v;
-			}
-
-			// Still no returned value?
-		}
 
 		if (this.defaultRules !== undefined) {
-			var index = 0;
 			// Select from this basic array of rules
+			var index = Math.floor(Math.pow(rng(), this.falloff) * this.defaultRules.length);
 
-			// Get the distribution from the grammar if there is no other
-			var distribution = this.distribution;
-			if (!distribution)
-				distribution = this.grammar.distribution;
-
-			switch (distribution) {
-				case "shuffle":
-
-					// create a shuffle desk
-					if (!this.shuffledDeck || this.shuffledDeck.length === 0) {
-						// make an array
-						this.shuffledDeck = fyshuffle(Array.apply(null, {
-							length: this.defaultRules.length
-						}).map(Number.call, Number), this.falloff);
-
-					}
-
-					index = this.shuffledDeck.pop();
-
-					break;
-				case "weighted":
-					errors.push("Weighted distribution not yet implemented");
-					break;
-				case "falloff":
-					errors.push("Falloff distribution not yet implemented");
-					break;
-				default:
-
-					index = Math.floor(Math.pow(rng(), this.falloff) * this.defaultRules.length);
-					break;
+			while (this.defaultRules.length > 0 && index == this.lastIndex) {
+				// search for first index that is not lastIndex
+				++index;
+				index %= this.defaultRules.length;
 			}
 
-			if (!this.defaultUses)
-				this.defaultUses = [];
-			this.defaultUses[index] = ++this.defaultUses[index] || 1;
+			this.lastIndex = index;
 			return this.defaultRules[index];
 		}
 
@@ -647,55 +630,38 @@ export var ephemeral = function () {
 	 * @returns {void}
 	 */
 	RuleSet.prototype.clearState = function () {
-
-		if (this.defaultUses) {
-			this.defaultUses = [];
-		}
+		this.lastIndex = -1;
 	};
-
-	/**
-	 * Description
-	 * @param {[]} array
-	 * @param {number} falloff
-	 * @returns {any}
-	 */
-	function fyshuffle(array, falloff) {
-		var currentIndex = array.length,
-			temporaryValue,
-			randomIndex;
-
-		// While there remain elements to shuffle...
-		while (0 !== currentIndex) {
-
-			// Pick a remaining element...
-			randomIndex = Math.floor(rng() * currentIndex);
-			currentIndex -= 1;
-
-			// And swap it with the current element.
-			temporaryValue = array[currentIndex];
-			array[currentIndex] = array[randomIndex];
-			array[randomIndex] = temporaryValue;
-		}
-
-		return array;
-	}
 
 	/**
 	 * Description
 	 * @constructor
 	 * @param {Grammar} grammar
 	 * @param {string} key
-	 * @param {ConstructorParameters<typeof RuleSet>[1]} rawRules
+	 * @param {string | string[] | undefined} rawRules
 	 */
 	var Symbol = function (grammar, key, rawRules) {
 		// Symbols can be made with a single value, and array, or array of objects of (conditions/values)
+		/** @type {string} */
 		this.key = key;
+		/** @type {Grammar} */
 		this.grammar = grammar;
+		/** @type {string | string[] | undefined} */
 		this.rawRules = rawRules;
 
+		/** @type {RuleSet} */
 		this.baseRules = new RuleSet(this.grammar, rawRules);
-		this.clearState();
 
+		/** @type {RuleSet[]} */
+		this.stack = [this.baseRules];
+
+		/** @type {{node: EphemeralNode}[]} */
+		this.uses = [];
+
+		/** @type {boolean} */
+		this.isDynamic = false;
+
+		this.clearState();
 	};
 
 	/**
@@ -712,7 +678,7 @@ export var ephemeral = function () {
 
 	/**
 	 * Description
-	 * @param {ConstructorParameters<typeof RuleSet>[1]} rawRules
+	 * @param {string | string[] | undefined} rawRules
 	 * @returns {void}
 	 */
 	Symbol.prototype.pushRules = function (rawRules) {
@@ -744,7 +710,7 @@ export var ephemeral = function () {
 			return "((empty stack: " + this.key + "))";
 		}
 
-		return this.stack[this.stack.length - 1].selectRule();
+		return this.stack[this.stack.length - 1].selectRule(errors);
 	};
 
 	/**
@@ -755,7 +721,7 @@ export var ephemeral = function () {
 		if (this.stack.length === 0) {
 			return null;
 		}
-		return this.stack[this.stack.length - 1].selectRule();
+		return this.stack[this.stack.length - 1].selectRule([]);
 	};
 
 	/**
@@ -769,15 +735,30 @@ export var ephemeral = function () {
 	/**
 	 * Make a grammar out of either a string of a JSON or an ephemeral text
 	 * @constructor
-	 * @param {ord<string, string | string[]> | string} raw
+	 * @param {Record<string, string | string[]>} raw
 	 */
 	var Grammar = function (raw) {
+		/** @type {Record<string, (s: string, params: string[]) => string>} */
 		this.modifiers = {};
-		if (raw.startsWith("{"))
-			this.loadFromRawObj(JSON.parse(raw));
-		else
-			this.loadFromStringObj(raw);
+		/** @type {number} */
+		this.depth = -1;
+		/** @type {Object.<string, Symbol>} */
+		this.symbols = {};
+		/** @type {Grammar[]} */
+		this.subgrammars = [];
+		/** @type {string[]} */
+		this.errors = [];
+		/** @type {Record<string, string | string[]>} */
+		this.raw = raw;
 
+		if (this.raw) {
+			// Add all rules to the grammar
+			for (var key in this.raw) {
+				if (this.raw.hasOwnProperty(key)) {
+					this.symbols[key] = new Symbol(this, key, this.raw[key]);
+				}
+			}
+		}
 	};
 
 	/**
@@ -787,7 +768,7 @@ export var ephemeral = function () {
 	Grammar.prototype.clearState = function () {
 		var keys = Object.keys(this.symbols);
 		for (var i = 0; i < keys.length; i++) {
-			this.symbols[keys[i]].clearState();
+			if (this.symbols[keys[i]]) this.symbols[keys[i]].clearState();
 		}
 	};
 
@@ -824,34 +805,132 @@ export var ephemeral = function () {
 
 	};
 
+	/**
+	 * Description
+	 * @param {string} rule
+	 * @param {Record<string, string | undefined>} scratch
+	 * @returns {EphemeralNode}
+	 */
+	Grammar.prototype.createRoot = function (rule, scratch) {
+		// Create a node and subnodes
+		var root = new EphemeralNode(null, this, 0, {
+			type: -1,
+			raw: rule,
+			scratch: scratch,
+		});
+
+		return root;
+	};
 
 	/**
 	 * Description
-	 * @param {Record<string, string | string[]>} raw
+	 * @param {string} rule
+	 * @param {boolean} allowEscapeChars
+	 * @param {Record<string, string | undefined>} scratch
+	 * @returns {EphemeralNode}
+	 */
+	Grammar.prototype.expand = function (rule, allowEscapeChars, scratch) {
+		var root = this.createRoot(rule, scratch);
+		root.expand(false);
+		if (!allowEscapeChars)
+			root.clearEscapeChars();
+
+		return root;
+	};
+
+	/**
+	 * Description
+	 * @param {string} rule
+	 * @param {boolean} allowEscapeChars
+	 * @param {Record<string, string | undefined>} scratch
+	 * @returns {string}
+	 */
+	Grammar.prototype.flatten = function (rule, allowEscapeChars, scratch) {
+		var root = this.expand(rule, allowEscapeChars, scratch);
+
+		return root.finishedText;
+	};
+
+	/**
+	 * Description
+	 * @returns {string}
+	 */
+	Grammar.prototype.toJSON = function () {
+		var keys = Object.keys(this.symbols);
+		var symbolJSON = [];
+		for (var i = 0; i < keys.length; i++) {
+			var key = keys[i];
+			if (this.symbols && this.symbols[key]) symbolJSON.push(' "' + key + '" : ' + this.symbols[key].rulesToJSON());
+		}
+		return "{\n" + symbolJSON.join(",\n") + "\n}";
+	};
+
+	/**
+	 * Create or push rules
+	 * @param {string} key
+	 * @param {ConstructorParameters<typeof Symbol>[2]} rawRules
+	 * @param {NodeAction?} sourceAction
 	 * @returns {void}
 	 */
-	Grammar.prototype.loadFromRawObj = function (raw) {
+	Grammar.prototype.pushRules = function (key, rawRules, sourceAction) {
 
-		this.raw = raw;
-		this.symbols = {};
-		this.subgrammars = [];
+		if (this.symbols === undefined)
+			this.symbols = {};
 
-		if (this.raw) {
-			// Add all rules to the grammar
-			for (var key in this.raw) {
-				if (this.raw.hasOwnProperty(key)) {
-					this.symbols[key] = new Symbol(this, key, this.raw[key]);
-				}
-			}
+		if (this.symbols[key] === undefined) {
+			this.symbols[key] = new Symbol(this, key, rawRules);
+			if (sourceAction)
+				this.symbols[key].isDynamic = true;
+		} else {
+			this.symbols[key].pushRules(rawRules);
 		}
 	};
 
 	/**
 	 * Description
-	 * @param {string} text
+	 * @param {string} key
+	 * @returns {void}
+	 */
+	Grammar.prototype.popRules = function (key) {
+		if (!this.symbols[key])
+			this.errors.push("Can't pop: no symbol for key " + key);
+		this.symbols[key].popRules();
+	};
+
+	/**
+	 * Description
+	 * @param {string} key
+	 * @param {EphemeralNode} node
+	 * @param {string[]} errors
 	 * @returns {any}
 	 */
+	Grammar.prototype.selectRule = function (key, node, errors) {
+		if (this.symbols[key]) {
+			var rule = this.symbols[key].selectRule(node, errors);
+
+			return rule;
+		}
+
+		// Failover to alternative subgrammars
+		for (var i = 0; i < this.subgrammars.length; i++) {
+
+			if (this.subgrammars[i].symbols[key])
+				return this.subgrammars[i].symbols[key].selectRule(node, errors);
+		}
+
+		// No symbol?
+		errors.push("No symbol for '" + key + "'");
+		return "(( no symbol " + key + "))";
+	};
+
+
+	/**
+	 * Description
+	 * @param {string} text
+	 * @returns {Record<string, string | string[]>}
+	 */
 	function string2json(text) {
+		/** @type {Record<string, string | string[]>} */
 		var rules = {}
 		var symbol = ""
 		var expansions = new Array()
@@ -905,170 +984,41 @@ export var ephemeral = function () {
 		return rules
 	}
 
-	/**
-	 * Description
-	 * @param {string} raw
-	 * @returns {void}
-	 */
-	Grammar.prototype.loadFromStringObj = function (raw) {
-
-		this.raw = string2json(raw);
-		this.symbols = {};
-		this.subgrammars = [];
-
-		if (this.raw) {
-			// Add all rules to the grammar
-			for (var key in this.raw) {
-				if (this.raw.hasOwnProperty(key)) {
-					this.symbols[key] = new Symbol(this, key, this.raw[key]);
-				}
-			}
-		}
-
-	}
-
-	/**
-	 * Description
-	 * @param {string} rule
-	 * @param {{}} scratch
-	 * @returns {EphemeralNode}
-	 */
-	Grammar.prototype.createRoot = function (rule, scratch) {
-		// Create a node and subnodes
-		var root = new EphemeralNode(this, 0, {
-			type: -1,
-			raw: rule,
-			scratch: scratch,
-		});
-
-		return root;
-	};
-
-	/**
-	 * Description
-	 * @param {string} rule
-	 * @param {boolean} allowEscapeChars
-	 * @param {{}} scratch
-	 * @returns {EphemeralNode}
-	 */
-	Grammar.prototype.expand = function (rule, allowEscapeChars, scratch) {
-		var root = this.createRoot(rule, scratch);
-		root.expand();
-		if (!allowEscapeChars)
-			root.clearEscapeChars();
-
-		return root;
-	};
-
-	/**
-	 * Description
-	 * @param {string} rule
-	 * @param {boolean} allowEscapeChars
-	 * @param {{}} scratch
-	 * @returns {string}
-	 */
-	Grammar.prototype.flatten = function (rule, allowEscapeChars, scratch) {
-		var root = this.expand(rule, allowEscapeChars, scratch);
-
-		return root.finishedText;
-	};
-
-	/**
-	 * Description
-	 * @returns {string}
-	 */
-	Grammar.prototype.toJSON = function () {
-		var keys = Object.keys(this.symbols);
-		var symbolJSON = [];
-		for (var i = 0; i < keys.length; i++) {
-			var key = keys[i];
-			symbolJSON.push(' "' + key + '" : ' + this.symbols[key].rulesToJSON());
-		}
-		return "{\n" + symbolJSON.join(",\n") + "\n}";
-	};
-
-	/**
-	 * Create or push rules
-	 * @param {string} key
-	 * @param {ConstructorParameters<typeof Symbol>[2]} rawRules
-	 * @param {boolean?} sourceAction
-	 * @returns {void}
-	 */
-	Grammar.prototype.pushRules = function (key, rawRules, sourceAction) {
-
-		if (this.symbols[key] === undefined) {
-			this.symbols[key] = new Symbol(this, key, rawRules);
-			if (sourceAction)
-				this.symbols[key].isDynamic = true;
-		} else {
-			this.symbols[key].pushRules(rawRules);
-		}
-	};
-
-	/**
-	 * Description
-	 * @param {string} key
-	 * @returns {void}
-	 */
-	Grammar.prototype.popRules = function (key) {
-		if (!this.symbols[key])
-			this.errors.push("Can't pop: no symbol for key " + key);
-		this.symbols[key].popRules();
-	};
-
-	/**
-	 * Description
-	 * @param {string} key
-	 * @param {EphemeralNode} node
-	 * @param {string[]} errors
-	 * @returns {any}
-	 */
-	Grammar.prototype.selectRule = function (key, node, errors) {
-		if (this.symbols[key]) {
-			var rule = this.symbols[key].selectRule(node, errors);
-
-			return rule;
-		}
-
-		// Failover to alternative subgrammars
-		for (var i = 0; i < this.subgrammars.length; i++) {
-
-			if (this.subgrammars[i].symbols[key])
-				return this.subgrammars[i].symbols[key].selectRule();
-		}
-
-		// No symbol?
-		errors.push("No symbol for '" + key + "'");
-		return "(( no symbol " + key + "))";
-	};
 
 	// Parses a plaintext rule in the ephemeral syntax
+	/**
+	 * @constructor
+	 */
 	ephemeral = {
-
 		/**
 		 * Description
-		 * @param {ConstructorParameters<typeof Grammar>[0]} raw
+		 * @param {string} raw
 		 * @returns {Grammar}
 		 */
 		createGrammar: function (raw) {
-			return new Grammar(raw);
+
+			/** @type {Record<string, string | string[]>} */
+			var jsonData = raw.startsWith("{") ? JSON.parse(raw) : string2json(raw);
+
+			return new Grammar(jsonData);
 		},
 
 		// Parse the contents of a tag
 		/**
 		 * Description
 		 * @param {string | null} tagContents
-		 * @returns {{ symbol: any; preactions: any[]; postactions: any[]; modifiers: any[] }}
+		 * @returns {{ symbol: Symbol | undefined; modifiers: string[]; preactions: NodeAction[]; postactions: NodeAction[]; }}
 		 */
 		parseTag: function (tagContents) {
 
+			/** @type {{ symbol: Symbol | undefined; modifiers: string[]; preactions: NodeAction[]; postactions: NodeAction[]; }} */
 			var parsed = {
 				symbol: undefined,
 				preactions: [],
 				postactions: [],
 				modifiers: []
 			};
-			var sections = ephemeral.parse(tagContents);
+			var { sections, errors } = ephemeral.parse(tagContents);
 			var symbolSection = undefined;
 			for (var i = 0; i < sections.length; i++) {
 				if (sections[i].type === 0) {
@@ -1095,28 +1045,35 @@ export var ephemeral = function () {
 		/**
 		 * Description
 		 * @param {string | null} rule
-		 * @returns {ArrayWithErrors}
+		 * @returns {{ sections: {type: number; raw: string }[]; errors: string[]}}
 		 */
 		parse: function (rule) {
 			var depth = 0;
 			var inTag = false;
 			var inVar = false;
+			/** @type {{ type: number, raw: string }[]} */
 			var sections = [];
 			var escaped = false;
 
+			/** @type {string[]} */
 			var errors = [];
 			var start = 0;
 
 			var escapedSubstring = "";
+
+			/** @type {number | undefined} */
 			var lastEscapedChar = undefined;
 
 			if (rule === null) {
-				var sections = [];
-				sections.errors = errors;
-
-				return sections;
+				return { sections: sections, errors: errors };
 			}
 
+			/**
+			 * @param {number} start
+			 * @param {number} end
+			 * @param {number} type
+			 * @returns {void}
+			 */
 			function createSection(start, end, type) {
 				if (end - start < 1) {
 					if (type === 1)
@@ -1125,12 +1082,14 @@ export var ephemeral = function () {
 						errors.push(start + ": empty action");
 
 				}
-				var rawSubstring;
-				if (lastEscapedChar !== undefined) {
-					rawSubstring = escapedSubstring + "\\" + rule.substring(lastEscapedChar + 1, end);
-
-				} else {
-					rawSubstring = rule.substring(start, end);
+				/** @type {string} */
+				var rawSubstring = "";
+				if (rule) {
+					if (lastEscapedChar !== undefined) {
+						rawSubstring = escapedSubstring + "\\" + rule.substring(lastEscapedChar + 1, end);
+					} else { 
+						rawSubstring = rule.substring(start, end);
+					}
 				}
 				sections.push({
 					type: type,
@@ -1227,13 +1186,20 @@ export var ephemeral = function () {
 
 			// Strip out empty plaintext sections
 
-			sections = sections.filter(function (section) {
-				if (section.type === 0 && section.raw.length === 0)
-					return false;
-				return true;
-			});
-			sections.errors = errors;
-			return sections;
+			sections = sections.filter(
+
+				/**
+				 * Description
+				 * @param {{ type: number, raw: string }} section
+				 * @returns {boolean}
+				 */
+				function (section) {
+					if (section.type === 0 && section.raw.length === 0)
+						return false;
+					return true;
+				}
+			);
+			return { sections: sections, errors: errors };
 		},
 	};
 
@@ -1249,7 +1215,7 @@ export var ephemeral = function () {
 
 	/** @type {RuleSet} */
 	ephemeral.RuleSet = RuleSet;
-	
+
 	/** @type {(newRng: () => number) => void} */
 	ephemeral.setRng = setRng;
 

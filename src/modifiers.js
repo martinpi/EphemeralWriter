@@ -28,7 +28,7 @@ var isConsonant = function (c) {
 
 /**
  * Description
- * @param {string} c
+ * @param {string} s
  * @returns {boolean}
  */
 function endsWithConY(s) {
@@ -128,7 +128,7 @@ var modifiers = {
      * @returns {string}
      */
     a: function (s) {
-        if (!isConsonant(s.charAt()))
+        if (!isConsonant(s.charAt(0)))
             return "an " + s;
         return "a " + s;
 
