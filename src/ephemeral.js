@@ -17,7 +17,7 @@ class EphemeralNode {
 	 * @param {EphemeralNode | null} parent
 	 * @param {Grammar} grammar
 	 * @param {number} childIndex
-	 * @param {{ raw: string, scratch: Record<string, string | undefined> | undefined, type: number }} settings
+	 * @param {{ raw: string, scratch: Record<string, string> | undefined, type: number }} settings
 	 */
 	constructor(parent, grammar, childIndex, settings) {
 		/** @type {string[]} */
@@ -26,8 +26,8 @@ class EphemeralNode {
 		this.depth = 0;
 		/** @type {number} */
 		this.childIndex = 0;
-		/** @type {Record<string, string | undefined>} */
-		this.scratch = settings.scratch === undefined ? {} : settings.scratch;
+		/** @type {Record<string, string> | undefined} */
+		this.scratch = settings.scratch;
 		/** @type {Grammar} */
 		this.grammar = grammar;
 		/** @type {EphemeralNode | null} */
@@ -50,7 +50,7 @@ class EphemeralNode {
 			this.depth = parent.depth + 1;
 			/** @type {number} */
 			this.childIndex = childIndex;
-			/** @type {Record<string, string | undefined>} */
+			/** @type {Record<string, string> | undefined} */
 			this.scratch = parent.scratch;
 		}
 
@@ -241,7 +241,7 @@ class EphemeralNode {
 
 					switch (this.varop.type) {
 						case 0:
-							this.finishedText = this.scratch[this.varop.target] || "";
+							this.finishedText = this.scratch && this.scratch[this.varop.target] || "";
 							break;
 						default:
 						case 1:
@@ -249,7 +249,7 @@ class EphemeralNode {
 							break;
 						case 2:
 							// conditional
-							const condition = this.scratch[this.varop.target] == this.varop.value && this.varop.value !== undefined;
+							const condition = this.scratch && this.scratch[this.varop.target] == this.varop.value && this.varop.value !== undefined;
 
 							if (this.varop.conditional && condition) {
 								// console.log("Parsing conditional")
@@ -397,7 +397,7 @@ class EphemeralNode {
 function NodeVariableOp(node, raw) {
 	/** @type {EphemeralNode} */
 	this.node = node;
-	/** @type {Record<string, string | undefined>} */
+	/** @type {Record<string, string> | undefined} */
 	this.scratch = this.node.scratch;
 
 	var comparision = raw.split("==");
@@ -438,7 +438,8 @@ NodeVariableOp.prototype.activate = function () {
 			break;
 		case 1:
 			// console.log("Storing " + this.value + " in slot " + this.target + " in " + this.scratch)
-			this.scratch[this.target] = this.value;
+			if (this.scratch && this.value)
+				this.scratch[this.target] = this.value;
 			break;
 	}
 }
@@ -794,7 +795,7 @@ class Grammar {
 	/**
 	 * Description
 	 * @param {string} rule
-	 * @param {Record<string, string | undefined>} scratch
+	 * @param {Record<string, string> | undefined} scratch
 	 * @returns {EphemeralNode}
 	 */
 	createRoot = (rule, scratch) => {
@@ -812,7 +813,7 @@ class Grammar {
 	 * Description
 	 * @param {string} rule
 	 * @param {boolean} allowEscapeChars
-	 * @param {Record<string, string | undefined>} scratch
+	 * @param {Record<string, string> | undefined} scratch
 	 * @returns {EphemeralNode}
 	 */
 	expand = (rule, allowEscapeChars, scratch) => {
@@ -830,7 +831,7 @@ class Grammar {
 	 * Description
 	 * @param {string} rule
 	 * @param {boolean} allowEscapeChars
-	 * @param {Record<string, string | undefined>} scratch
+	 * @param {Record<string, string> | undefined} scratch
 	 * @returns {string}
 	 */
 	flatten = (rule, allowEscapeChars, scratch) => {
