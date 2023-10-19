@@ -1,4 +1,5 @@
-import { ephemeral } from "../src/ephemeral";
+import { createGrammar, modifiers } from "../src/ephemeral";
+// import { modifiers } from "../src/modifiers";
 
 const testGram = `
 [heister]
@@ -12,8 +13,8 @@ Winnie He
 `;
 
 export const testGrammar = (text: string) => {
-	const grammar = ephemeral.createGrammar(text);
-	grammar.addModifiers(ephemeral.baseEngModifiers);
+	const grammar = createGrammar(text);
+	grammar.addModifiers(modifiers);
 	let result = grammar.expand("#origin#", false, { c: "Hello" });
 	return result.finishedText || "Failed to expand grammar";
 }

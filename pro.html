@@ -30,8 +30,8 @@
   <!-- Scripts
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="src/ephemeral.js"></script>
-  <script src="src/modifiers.js"></script>
+  <script src="src/ephemeral.js" type="module"></script>
+  <script src="src/modifiers.js" type="module"></script>
   <script src="src/utils.js"></script>
   <script src="extra/grammars.js"></script>
 </head>
@@ -157,7 +157,7 @@ holla
     const jar = CodeJar(node, my);
 
     function parse(json) {
-      let grammar = ephemeral.createGrammar(json)
+      let grammar = createGrammar(json)
       grammar.addModifiers(modifiers)
       // let result = grammar.flatten("#origin#", false, { c: "Hello" })
 
