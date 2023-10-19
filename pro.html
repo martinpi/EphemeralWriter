@@ -32,7 +32,6 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="src/ephemeral.js" type="module"></script>
   <script src="src/modifiers.js" type="module"></script>
-  <script src="src/utils.js"></script>
   <script src="extra/grammars.js"></script>
 </head>
 
@@ -157,20 +156,23 @@ holla
     const jar = CodeJar(node, my);
 
     function parse(json) {
-      let grammar = createGrammar(json)
-      grammar.addModifiers(modifiers)
-      // let result = grammar.flatten("#origin#", false, { c: "Hello" })
+      import("./src/ephemeral.js").then((module) => {
+        let grammar = module.createGrammar(json)
+        // grammar.addModifiers(module.modifiers)
+        // let result = grammar.flatten("#origin#", false, { c: "Hello" })
 
-      let result = grammar.expand("#origin#", true, { c: "Hello" })
-      // console.log(result.scratch)
+        let result = grammar.expand("#origin#", false, { c: "Hello" })
+        // console.log(result.scratch)
 
-      result = result.finishedText.replaceAll("\n", "<br/>")
+        let resultText = result.finishedText.replaceAll("\n", "<br/>")
 
-      let resultNode = document.getElementById("output")
-      resultNode.innerHTML += "<div style=\"margin-top: 0.5em;\">" + result + "<\div><hr/>"
+        let resultNode = document.getElementById("output")
+        resultNode.innerHTML += "<div style=\"margin-top: 0.5em;\">" + resultText + "<\div><hr/>"
 
-      // let debugNode = document.getElementById("debugOutput")
-      // debugNode.textContent = grammar.toHTML()
+        // resultNode.innerHTML += "<div style=\"margin-top: 0.5em; color: red;\">" + result.errors + "<\div><hr/>"
+
+
+      })
     }
 
     // let btn1 = document.getElementById("btnJson");
@@ -201,16 +203,6 @@ holla
     btn4.addEventListener('click', event => {
       let resultNode = document.getElementById("output")
       resultNode.textContent = ""
-    });
-
-    let btnEx1 = document.getElementById("btnEx1");
-    btnEx1.addEventListener('click', event => {
-      jar.updateCode(cookies)
-    });
-
-    let btnEx2 = document.getElementById("btnEx2");
-    btnEx2.addEventListener('click', event => {
-      jar.updateCode(sparrows)
     });
 
 

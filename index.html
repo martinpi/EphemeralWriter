@@ -32,7 +32,6 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="src/ephemeral.js" type="module"></script>
   <script src="src/modifiers.js" type="module"></script>
-  <script src="src/utils.js"></script>
   <script src="extra/grammars.js"></script>
 </head>
 
@@ -62,8 +61,7 @@ Jimmy Tartufi
 Winnie He
 
 [origin]
-[crew1:#heister#][crew2:#heister#]At dawn, #crew1# and #crew2# got ready for the biggest heist in their
-lives. #crew2# was nervous.
+[crew1:#heister#][crew2:#heister#]At dawn, #crew1# and #crew2# got ready for the biggest heist in their lives. #crew2# was nervous.
 
               <!-- [exp]
 holla
@@ -194,10 +192,13 @@ holla
           let result = grammar.expand("#origin#", false, { c: "Hello" })
           // console.log(result.scratch)
 
-          result = result.finishedText.replaceAll("\n", "<br/>")
+          let resultText = result.finishedText.replaceAll("\n", "<br/>")
 
           let resultNode = document.getElementById("output")
-          resultNode.innerHTML += "<div style=\"margin-top: 0.5em;\">" + result + "<\div><hr/>"
+          resultNode.innerHTML += "<div style=\"margin-top: 0.5em;\">" + resultText + "<\div><hr/>"
+
+          // resultNode.innerHTML += "<div style=\"margin-top: 0.5em; color: red;\">" + result.errors + "<\div><hr/>"
+
 
         })
 

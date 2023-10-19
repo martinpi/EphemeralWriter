@@ -92,7 +92,6 @@ class EphemeralNode {
 			// Add errors to this
 			if (errors.length > 0) {
 				this.errors = this.errors.concat(errors);
-
 			}
 
 			for (var i = 0; i < sections.length; i++) {
@@ -147,7 +146,7 @@ class EphemeralNode {
 					break;
 
 				// Tag
-				case 1:
+				case 1:					
 					// Parse to find any actions, and figure out what the symbol is
 					/** @type {NodeAction[]} */
 					this.preactions = [];
@@ -181,14 +180,11 @@ class EphemeralNode {
 						this.preactions[i].activate();
 					}
 
-					this.finishedText = this.raw;
-
 					// Expand (passing the node, this allows tracking of recursion depth)
-
 					var selectedRule = this.symbol ? this.grammar.selectRule(this.symbol, this, this.errors) : null;
 
 					if (selectedRule)
-						this.expandChildren(selectedRule, preventRecursion);
+						this.expandChildren(selectedRule, false);
 
 					// Apply modifiers
 					// TODO: Update parse function to not trigger on hashtags within parenthesis within tags,
@@ -597,10 +593,9 @@ function RuleSet(grammar, raw) {
 RuleSet.prototype.selectRule = function (errors) {
 
 	if (this.defaultRules !== undefined) {
-		// Select from this basic array of rules
-		var index = Math.floor(Math.pow(Math.random(), this.falloff) * this.defaultRules.length);
+		var index = Math.floor(Math.random() * this.defaultRules.length);
 
-		while (this.defaultRules.length > 0 && index == this.lastIndex) {
+		while (this.defaultRules.length > 1 && index == this.lastIndex) {
 			// search for first index that is not lastIndex
 			++index;
 			index %= this.defaultRules.length;
@@ -640,16 +635,12 @@ class EphemeralSymbol {
 		this.grammar = grammar;
 		/** @type {string | string[] | undefined} */
 		this.rawRules = rawRules;
-
 		/** @type {RuleSet} */
 		this.baseRules = new RuleSet(this.grammar, rawRules);
-
 		/** @type {RuleSet[]} */
 		this.stack = [this.baseRules];
-
 		/** @type {{node: EphemeralNode}[]} */
 		this.uses = [];
-
 		/** @type {boolean} */
 		this.isDynamic = false;
 
@@ -661,7 +652,6 @@ class EphemeralSymbol {
 	 * @returns {void}
 	 */
 	clearState = () => {
-
 		// Clear the stack and clear all ruleset usages
 		this.stack = [this.baseRules];
 		this.uses = [];
@@ -831,6 +821,8 @@ class Grammar {
 		if (!allowEscapeChars)
 			root.clearEscapeChars();
 
+		if (root.errors && root.errors.length > 0) console.error(root.errors);
+
 		return root;
 	};
 
@@ -843,7 +835,6 @@ class Grammar {
 	 */
 	flatten = (rule, allowEscapeChars, scratch) => {
 		var root = this.expand(rule, allowEscapeChars, scratch);
-
 		return root.finishedText;
 	};
 
@@ -918,67 +909,6 @@ class Grammar {
 		errors.push("No symbol for '" + key + "'");
 		return "(( no symbol " + key + "))";
 	};
-
-
-	/**
-	 * Description
-	 * @param {string} text
-	 * @returns {Record<string, string | string[]>}
-	 */
-	string2json = (text) => {
-		/** @type {Record<string, string | string[]>} */
-		var rules = {}
-		var symbol = ""
-		var expansions = new Array()
-		var asterisk = false;
-
-		let lines = text.split('\n')
-		lines.forEach(line => {
-			let trimmed = line.trim()
-
-			// skip comments
-			if (trimmed.startsWith("\\\\")) return
-
-			// skip empty lines unless in * mode
-			if (trimmed.length == 0) {
-				if (asterisk && expansions.length > 0)
-					expansions[expansions.length - 1] += "\n"
-				return
-			}
-
-			if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
-				// we still got the old symbol stored
-				if (symbol.length > 0) {
-					// shave off last \n because a newline before the symbol is ok
-					if (expansions[expansions.length - 1].endsWith("\n")) {
-						expansions[expansions.length - 1] = expansions[expansions.length - 1].substring(0, expansions[expansions.length - 1].length - 1)
-					}
-
-					rules[symbol] = expansions
-					expansions = new Array()
-					asterisk = false;
-				}
-				symbol = trimmed.substring(1, trimmed.length - 1)
-			} else {
-				if (trimmed.startsWith("*")) {
-					expansions.push(trimmed.substring(1).trim())
-					asterisk = true
-				} else {
-					// append if we're in asterisk mode
-					if (asterisk)
-						expansions[expansions.length - 1] += "\n" + trimmed;
-					else
-						// we're neither in asterisk mode nor is this a new rule, so fall back to old behaviour
-						expansions.push(trimmed)
-				}
-			}
-
-			if (symbol.length > 0) {
-				rules[symbol] = expansions
-			}
-		})
-		return rules
-	}
 };
 
 // Parses a plaintext rule in the ephemeral syntax
@@ -992,10 +922,8 @@ class Grammar {
  * @returns {Grammar}
  */
 function createGrammar(raw) {
-
 	/** @type {Record<string, string | string[]>} */
 	var jsonData = raw.startsWith("{") ? JSON.parse(raw) : string2json(raw);
-
 	return new Grammar(jsonData);
 }
 
@@ -1196,6 +1124,67 @@ function parse(rule) {
 	);
 	return { sections: sections, errors: errors };
 }
+
+/**
+ * Description
+ * @param {string} text
+ * @returns {Record<string, string | string[]>}
+ */
+const string2json = (text) => {
+	/** @type {Record<string, string | string[]>} */
+	var rules = {}
+	var symbol = ""
+	var expansions = new Array()
+	var asterisk = false;
+
+	let lines = text.split('\n')
+	lines.forEach(line => {
+		let trimmed = line.trim()
+
+		// skip comments
+		if (trimmed.startsWith("\\\\")) return
+
+		// skip empty lines unless in * mode
+		if (trimmed.length == 0) {
+			if (asterisk && expansions.length > 0)
+				expansions[expansions.length - 1] += "\n"
+			return
+		}
+
+		if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+			// we still got the old symbol stored
+			if (symbol.length > 0) {
+				// shave off last \n because a newline before the symbol is ok
+				if (expansions[expansions.length - 1].endsWith("\n")) {
+					expansions[expansions.length - 1] = expansions[expansions.length - 1].substring(0, expansions[expansions.length - 1].length - 1)
+				}
+
+				rules[symbol] = expansions
+				expansions = new Array()
+				asterisk = false;
+			}
+			symbol = trimmed.substring(1, trimmed.length - 1)
+		} else {
+			if (trimmed.startsWith("*")) {
+				expansions.push(trimmed.substring(1).trim())
+				asterisk = true
+			} else {
+				// append if we're in asterisk mode
+				if (asterisk)
+					expansions[expansions.length - 1] += "\n" + trimmed;
+				else
+					// we're neither in asterisk mode nor is this a new rule, so fall back to old behaviour
+					expansions.push(trimmed)
+			}
+		}
+
+		if (symbol.length > 0) {
+			rules[symbol] = expansions
+		}
+	})
+	return rules
+}
+
 
 export { createGrammar, Grammar }
 export { modifiers } from "./modifiers.js";
