@@ -1,4 +1,9 @@
 
+/**
+ * Description
+ * @param {string} text
+ * @returns {{}}
+ */
 function string2json(text) {
 	var rules = {}
 	var symbol = ""

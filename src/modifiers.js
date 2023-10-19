@@ -3,6 +3,11 @@
  */
 
 
+/**
+ * Description
+ * @param {string} c
+ * @returns {boolean}
+ */
 var isConsonant = function (c) {
     c = c.toLowerCase();
     switch (c) {
@@ -21,6 +26,11 @@ var isConsonant = function (c) {
     return true;
 };
 
+/**
+ * Description
+ * @param {string} c
+ * @returns {boolean}
+ */
 function endsWithConY(s) {
     if (s.charAt(s.length - 1) === 'y') {
         return isConsonant(s.charAt(s.length - 2));
@@ -29,6 +39,11 @@ function endsWithConY(s) {
 };
 
 var modifiers = {
+    /**
+     * Description
+     * @param {string} s
+     * @returns {string}
+     */
     capitaliseAll: function (s) {
         return s.replace(/(?:^|\s)\S/g, function (a) {
             return a.toUpperCase();
@@ -36,6 +51,11 @@ var modifiers = {
 
     },
 
+    /**
+     * Description
+     * @param {string} s
+     * @returns {string}
+     */
     capitalizeAll: function (s) {
         return s.replace(/(?:^|\s)\S/g, function (a) {
             return a.toUpperCase();
@@ -43,20 +63,40 @@ var modifiers = {
 
     },
 
+    /**
+     * Description
+     * @param {string} s
+     * @returns {string}
+     */
     caps: function (s) {
         return s.charAt(0).toUpperCase() + s.slice(1);
 
     },
 
+    /**
+     * Description
+     * @param {string} s
+     * @returns {string}
+     */
     capitalize: function (s) {
         return s.charAt(0).toUpperCase() + s.slice(1);
 
     },
 
+    /**
+     * Description
+     * @param {string} s
+     * @returns {string}
+     */
     inQuotes: function (s) {
         return '"' + s + '"';
     },
 
+    /**
+     * Description
+     * @param {string} s
+     * @returns {string}
+     */
     comma: function (s) {
         var last = s.charAt(s.length - 1);
         if (last === ",")
@@ -70,6 +110,11 @@ var modifiers = {
         return s + ",";
     },
 
+    /**
+     * Description
+     * @param {string} s
+     * @returns {string}
+     */
     beeSpeak: function (s) {
         //            s = s.replace("s", "zzz");
 
@@ -77,6 +122,11 @@ var modifiers = {
         return s;
     },
 
+    /**
+     * Description
+     * @param {string} s
+     * @returns {string}
+     */
     a: function (s) {
         if (!isConsonant(s.charAt()))
             return "an " + s;
@@ -84,6 +134,11 @@ var modifiers = {
 
     },
 
+    /**
+     * Description
+     * @param {string} s
+     * @returns {string}
+     */
     s: function (s) {
 
         var last = s.charAt(s.length - 1);
@@ -115,10 +170,20 @@ var modifiers = {
 
     },
 
+    /**
+     * Description
+     * @param {string} s
+     * @returns {string}
+     */
     n: function (s) {
         return s + "\n";
     },
 
+    /**
+     * Description
+     * @param {string} s
+     * @returns {string}
+     */
     title: function (s) {
         return s.replace(
             /\w\S*/g,
@@ -128,6 +193,11 @@ var modifiers = {
         );
     },
 
+    /**
+     * Description
+     * @param {string} s
+     * @returns {string}
+     */
     ed: function (s) {
 
         var index = s.indexOf(" ");

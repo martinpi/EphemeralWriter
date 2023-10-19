@@ -9,3 +9,6 @@ tslint.json
 png
 *.html
 css
+extra
+*.sh
+.gitignore
