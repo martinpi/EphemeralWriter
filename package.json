@@ -1,7 +1,7 @@
 {
   "name": "ephemeral-writer",
-  "version": "1.0.9",
-  "description": "A procedural text system based on Tracery.",
+  "version": "1.1.0",
+  "description": "A procedural text generation system.",
   "main": "dist/ephemeral.js",
   "types": "dist/ephemeral.d.ts",
   "scripts": {
