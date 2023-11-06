@@ -186,11 +186,11 @@ holla
       function parse(json) {
         import("./src/ephemeral.js").then((module) => {
           let grammar = module.createGrammar(json)
-          // grammar.addModifiers(module.modifiers)
+          grammar.addModifiers(module.modifiers)
           // let result = grammar.flatten("#origin#", false, { c: "Hello" })
 
           let result = grammar.expand("#origin#", false, { c: "Hello" })
-          // console.log(result.scratch)
+          // console.log(grammar)
 
           let resultText = result.finishedText.replaceAll("\n", "<br/>")
 
