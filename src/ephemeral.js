@@ -3,14 +3,6 @@
  * Original @author Kate
  */
 
-// /**
-//  * @typedef {Object} EphemeralObject
-// * @property {(Record<string, string | string[]> | string) => Grammar} createGrammar 
-// * @property {(string | null) => { symbol: string | undefined; modifiers: string[]; preactions: NodeAction[]; postactions: NodeAction[] }} parseTag 
-// * @property {(string | null) => { type: number, raw: string }[]} parse
-//  */
-
-
 class EphemeralNode {
 	/**
 	 * @constructor
@@ -140,13 +132,13 @@ class EphemeralNode {
 					this.expandChildren(this.raw, preventRecursion);
 					break;
 
-				// plaintext, do nothing but copy text into finsihed text
+				// plaintext, do nothing but copy text into finished text
 				case 0:
 					this.finishedText = this.raw;
 					break;
 
 				// Tag
-				case 1:					
+				case 1:
 					// Parse to find any actions, and figure out what the symbol is
 					/** @type {NodeAction[]} */
 					this.preactions = [];
@@ -262,7 +254,7 @@ class EphemeralNode {
 
 								// var parsed = parseTag(this.varop.conditional);
 
-								/** @type {{ symbol: string | undefined; modifiers: string[]; preactions: string[]; postactions: NodeAction[]; }} */
+								/** @type {{ symbol: string | undefined, modifiers: string[], preactions: string[], postactions: NodeAction[] }} */
 								var reparsed = {
 									symbol: undefined,
 									modifiers: [],
@@ -640,7 +632,7 @@ class EphemeralSymbol {
 		this.baseRules = new RuleSet(this.grammar, rawRules);
 		/** @type {RuleSet[]} */
 		this.stack = [this.baseRules];
-		/** @type {{node: EphemeralNode}[]} */
+		/** @type {EphemeralNode[]} */
 		this.uses = [];
 		/** @type {boolean} */
 		this.isDynamic = false;
@@ -684,9 +676,7 @@ class EphemeralSymbol {
 	 * @returns {string | null}
 	 */
 	selectRule = (node, errors) => {
-		this.uses.push({
-			node: node
-		});
+		this.uses.push(node);
 
 		if (this.stack.length === 0) {
 			errors.push("The rule stack for '" + this.key + "' is empty, too many pops?");
@@ -707,19 +697,12 @@ class EphemeralSymbol {
 		return this.stack[this.stack.length - 1].selectRule([]);
 	};
 
-	/**
-	 * Description
-	 * @returns {string}
-	 */
-	rulesToJSON = () => {
-		return JSON.stringify(this.rawRules);
-	};
 };
 
 class Grammar {
 
-	/**
- * Make a grammar out of either a string of a JSON or an ephemeral text
+/**
+ * Make a grammar out of either a string of a JSON or an ephemeral syntax
  * @constructor
  * @param {Record<string, string | string[]>} raw
  */
@@ -749,7 +732,7 @@ class Grammar {
 	};
 
 	/**
-	 * Description
+	 * Clear state of all symbols
 	 * @returns {void}
 	 */
 	clearState = () => {
@@ -760,7 +743,7 @@ class Grammar {
 	};
 
 	/**
-	 * Description
+	 * Add modifiers to the grammar.
 	 * @param {Record<string, (s: string, params: string[]) => string>} mods
 	 * @returns {void}
 	 */
@@ -776,7 +759,7 @@ class Grammar {
 	};
 
 	/**
-	 * Description
+	 * Register modifiers and return the grammar with the modifiers registered.
 	 * @param {Record<string, (s: string, params: string[]) => string>} mods
 	 * @returns {Grammar}
 	 */
@@ -793,7 +776,7 @@ class Grammar {
 	};
 
 	/**
-	 * Description
+	 * Create a root node
 	 * @param {string} rule
 	 * @param {Record<string, string> | undefined} scratch
 	 * @returns {EphemeralNode}
@@ -810,7 +793,33 @@ class Grammar {
 	};
 
 	/**
-	 * Description
+	 * Expand the grammar with the provided rule and return the root of the grammar.
+	 * @param {string} rule
+	 * @param {boolean} allowEscapeChars
+	 * @param {Record<string, string> | undefined} scratch
+	 * @returns {string[]}
+	 */
+	expandChildren = (rule, allowEscapeChars, scratch) => {
+		var root = this.createRoot(rule, scratch);
+
+		root.expandChildren(rule, false);
+
+		// root.expand(false);
+		if (!allowEscapeChars)
+			root.clearEscapeChars();
+
+		if (root.errors && root.errors.length > 0) console.error(root.errors);
+
+		/** @type {string[]} */
+		var finishedTexts = [];
+		root.children.forEach((child) => finishedTexts.push(child.finishedText));
+
+		return finishedTexts;
+	};
+
+
+	/**
+	 * Expand the grammar with the provided rule and return the root of the grammar.
 	 * @param {string} rule
 	 * @param {boolean} allowEscapeChars
 	 * @param {Record<string, string> | undefined} scratch
@@ -828,7 +837,7 @@ class Grammar {
 	};
 
 	/**
-	 * Description
+	 * Expand the grammar with the provided rule and return the finished text.
 	 * @param {string} rule
 	 * @param {boolean} allowEscapeChars
 	 * @param {Record<string, string> | undefined} scratch
@@ -840,7 +849,7 @@ class Grammar {
 	};
 
 	/**
-	 * Description
+	 * Convert all rules to JSON
 	 * @returns {string}
 	 */
 	toJSON = () => {
@@ -848,7 +857,7 @@ class Grammar {
 		var symbolJSON = [];
 		for (var i = 0; i < keys.length; i++) {
 			var key = keys[i];
-			if (this.symbols && this.symbols[key]) symbolJSON.push(' "' + key + '" : ' + this.symbols[key].rulesToJSON());
+			if (this.symbols && this.symbols[key]) symbolJSON.push(' "' + key + '" : ' + JSON.stringify(this.symbols[key].rawRules));
 		}
 		return "{\n" + symbolJSON.join(",\n") + "\n}";
 	};
@@ -875,7 +884,7 @@ class Grammar {
 	};
 
 	/**
-	 * Description
+	 * Pop a rule
 	 * @param {string} key
 	 * @returns {void}
 	 */
@@ -886,7 +895,7 @@ class Grammar {
 	};
 
 	/**
-	 * Description
+	 * Select a rule
 	 * @param {string} key
 	 * @param {EphemeralNode} node
 	 * @param {string[]} errors
@@ -912,13 +921,8 @@ class Grammar {
 	};
 };
 
-// Parses a plaintext rule in the ephemeral syntax
-// /**
-//  * @constructor
-//  */
-// export var ephemeral = function () {
 /**
- * Description
+ * Parses a plaintext rule in the ephemeral syntax or JSON as string
  * @param {string} raw
  * @returns {Grammar}
  */
@@ -928,15 +932,14 @@ function createGrammar(raw) {
 	return new Grammar(jsonData);
 }
 
-// Parse the contents of a tag
 /**
- * Description
+ * Parse the contents of a tag
  * @param {string | null} tagContents
- * @returns {{ symbol: string | undefined; modifiers: string[]; preactions: string[]; postactions: NodeAction[]; }}
+ * @returns {{ symbol: string | undefined, modifiers: string[], preactions: string[], postactions: NodeAction[] }}
  */
 function parseTag(tagContents) {
 
-	/** @type {{ symbol: string | undefined; modifiers: string[]; preactions: string[]; postactions: NodeAction[]; }} */
+	/** @type {{ symbol: string | undefined, modifiers: string[], preactions: string[], postactions: NodeAction[] }} */
 	var parsed = {
 		symbol: undefined,
 		preactions: [],
@@ -967,7 +970,7 @@ function parseTag(tagContents) {
 }
 
 /**
- * Description
+ * Parse a rule
  * @param {string | null} rule
  * @returns {{ sections: {type: number; raw: string }[]; errors: string[]}}
  */
@@ -1127,7 +1130,7 @@ function parse(rule) {
 }
 
 /**
- * Description
+ * Convert raw ephemeral syntax to JSON data
  * @param {string} text
  * @returns {Record<string, string | string[]>}
  */
