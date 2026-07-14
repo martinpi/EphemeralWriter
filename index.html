@@ -206,23 +206,20 @@ holla
         // debugNode.textContent = grammar.toHTML()
       }
 
-      // let btn1 = document.getElementById("btnJson");
-      // btn1.addEventListener('click', event => {
-      //   let code = jar.toString()
-      //   const obj = JSON.parse(code)
-      //   parse(obj)
-      // });
+	  function convert(text) {
+		  import("./src/ephemeral.js").then(({ string2json }) => {
+
+			  let json = string2json(text)
+			  let jsonString = JSON.stringify(json)
+
+			  let resultNode = document.getElementById("output")
+			  resultNode.innerHTML = "<div style=\"margin-top: 0.5em;\"><font color=\"#f28033\">" + jsonString + "</font></div>"
+		  });
+	  }
 
       let btn2 = document.getElementById("btnConv");
       btn2.addEventListener('click', event => {
-        let code = jar.toString()
-        let json = string2json(code)
-        let jsonString = JSON.stringify(json)
-        // jar.updateCode(jsonString)
-
-        let resultNode = document.getElementById("output")
-        resultNode.innerHTML = "<div style=\"margin-top: 0.5em;\"><font color=\"#f28033\">" + jsonString + "</font><\div>"
-
+		convert(jar.toString())
       });
 
       let btn3 = document.getElementById("btnEph");

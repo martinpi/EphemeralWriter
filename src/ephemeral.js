@@ -1134,7 +1134,7 @@ function parse(rule) {
  * @param {string} text
  * @returns {Record<string, string | string[]>}
  */
-const string2json = (text) => {
+function string2json(text) {
 	/** @type {Record<string, string | string[]>} */
 	var rules = {}
 	var symbol = ""
@@ -1189,6 +1189,5 @@ const string2json = (text) => {
 	return rules
 }
 
-
-export { createGrammar, Grammar }
+export { createGrammar, string2json, Grammar }
 export { modifiers } from "./modifiers.js";

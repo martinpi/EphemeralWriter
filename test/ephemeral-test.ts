@@ -1,4 +1,4 @@
-import { createGrammar, modifiers } from "../src/ephemeral";
+import { createGrammar, test, string2json, modifiers } from "../src/ephemeral";
 // import { modifiers } from "../src/modifiers";
 
 const testGram = `
